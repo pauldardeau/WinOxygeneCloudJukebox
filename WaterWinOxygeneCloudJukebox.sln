@@ -1,0 +1,26 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# RemObjects Water
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "WaterWinOxygeneCloudJukebox", "WaterWinOxygeneCloudJukebox.elements", "{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "WaterWinOxygeneTestCloudJukebox", "WaterWinOxygeneTestCloudJukebox\WaterWinOxygeneTestCloudJukebox.elements", "{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}.Release|AnyCPU.Build.0 = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
