@@ -1,5 +1,8 @@
 ﻿namespace WaterWinOxygeneCloudJukebox;
 
+uses
+  CloudJukeboxSharedProject;
+
 interface
 
 type
@@ -335,52 +338,6 @@ begin
     Options.CheckDataIntegrity := true;
   end;
 
-  if Args.Contains("compress") then begin
-    if DebugMode then begin
-      writeLn("setting compression on");
-    end;
-    Options.UseCompression := true;
-  end;
-
-  if Args.Contains("encrypt") then begin
-    if DebugMode then begin
-      writeLn("setting encryption on");
-    end;
-    Options.UseEncryption := true;
-  end;
-
-  if Args.Contains("key") then begin
-    const Key = Args.GetStringValue("key");
-    if DebugMode then begin
-      writeLn(String.Format("setting encryption key={0}", Key));
-    end;
-    Options.EncryptionKey := Key;
-  end;
-
-  if Args.Contains("keyfile") then begin
-    const Keyfile = Args.GetStringValue("keyfile");
-    if DebugMode then begin
-      writeLn(String.Format("reading encryption key file={0}", Keyfile));
-    end;
-
-    /*
-    string encryption_key;
-    if (Utils.FileReadAllText(keyfile, encryption_key) and
-       encryption_key.Length > 0) {
-
-      options.encryption_key = StrUtils::strip(encryption_key);
-    } else {
-      writeLn(String.Format("error: unable to read key file {0}", keyfile));
-      Utils.ProgramExit(1);
-    }
-
-    if (options.encryption_key.length() = 0) {
-      writeLn(String.Format("error: no key found in file {0}", keyfile));
-      Utils.ProgramExit(1);
-    }
-    */
-  end;
-
   if Args.Contains("storage") then begin
     const Storage = Args.GetStringValue("storage");
     SupportedSystems := new StringSet;
@@ -427,7 +384,11 @@ begin
       writeLn(String.Format("using storage system type {0}", StorageType));
     end;
     const ContainerPrefix = "com.swampbits.jukebox.";
-    const CredsFile = StorageType + "_creds.txt";
+  {$IFDEF WINDOWS}
+  const CredsFile = "win_" + StorageType + "_creds.txt";
+  {$ELSE}
+  const CredsFile = StorageType + "_creds.txt";
+  {$ENDIF}
     Creds := new PropertySet;
     //const cwd = Utils.GetCurrentDirectory();
     //const CredsFilePath = Utils.PathJoin(cwd, CredsFile);
@@ -462,8 +423,6 @@ begin
     else begin
       writeLn(String.Format("no creds file ({0})", CredsFilePath));
     end;
-
-    Options.EncryptionIv := "sw4mpb1ts.juk3b0x";
 
     const Command = Args.GetStringValue("command");
     Args := nil;

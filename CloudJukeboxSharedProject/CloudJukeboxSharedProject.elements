@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{81597031-EE7F-4FF3-A5A6-D36F333F23E3}</ProjectGuid>
+    <RootNamespace>CloudJukeboxSharedProject</RootNamespace>
+  </PropertyGroup>
+  <Import Project="CloudJukeboxSharedProject.projitems" Label="Shared" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.SharedProject.targets" />
+</Project>

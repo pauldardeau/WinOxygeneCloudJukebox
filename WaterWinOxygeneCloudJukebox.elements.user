@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <DebugArguments>
+      <Argument>--storage</Argument>
+      <Argument>fs</Argument>
+      <Argument Disabled="True">init-storage</Argument>
+      <Argument Disabled="True">import-songs</Argument>
+      <Argument>play</Argument>
+      <Argument>--directory</Argument>
+      <Argument>\\Mac\Home\Documents\CloudJukebox</Argument>
+      <Argument Disabled="True">list-songs</Argument>
+      <Argument Disabled="True">list-artists</Argument>
+      <Argument Disabled="True">list-containers</Argument>
+    </DebugArguments>
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+    <DebugArguments />
+  </PropertyGroup>
+</Project>

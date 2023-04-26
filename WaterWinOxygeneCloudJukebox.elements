@@ -30,21 +30,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
-    <Compile Include="Utils.pas" />
-    <Compile Include="JBUtils.pas" />
-    <Compile Include="FileMetadata.pas" />
-    <Compile Include="SongMetadata.pas" />
-    <Compile Include="PropertyValue.pas" />
-    <Compile Include="PropertyList.pas" />
-    <Compile Include="PropertySet.pas" />
-    <Compile Include="ArgumentParser.pas" />
-    <Compile Include="FSStorageSystem.pas" />
     <Compile Include="Jukebox.pas" />
     <Compile Include="JukeboxDB.pas" />
-    <Compile Include="JukeboxOptions.pas" />
-    <Compile Include="StorageSystem.pas" />
     <Compile Include="JukeboxMain.pas" />
-    <Compile Include="StringSet.pas" />
+    <Compile Include="SongDownloader.pas" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
+  <Import Project="CloudJukeboxSharedProject\CloudJukeboxSharedProject.projitems" Label="Shared" />
 </Project>

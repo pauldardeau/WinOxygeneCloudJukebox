@@ -1,0 +1,384 @@
+﻿<Cache>
+  <BuildMessages>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>255</Line>
+      <Index>0</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>39</EndColumn>
+      <LineInBuildLog>8</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>264</Line>
+      <Index>1</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>40</EndColumn>
+      <LineInBuildLog>9</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>273</Line>
+      <Index>2</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>41</EndColumn>
+      <LineInBuildLog>10</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>282</Line>
+      <Index>3</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>42</EndColumn>
+      <LineInBuildLog>11</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertyValue.pas</URL>
+      <Line>15</Line>
+      <Index>4</Index>
+      <Message>Field "IsNullValue" defined in type "PropertyValue" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>26</EndColumn>
+      <LineInBuildLog>12</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/S3ExtStorageSystem.pas</URL>
+      <Line>8</Line>
+      <Index>5</Index>
+      <Message>Field "AwsAccessKey" defined in type "S3ExtStorageSystem" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>26</EndColumn>
+      <LineInBuildLog>13</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/S3ExtStorageSystem.pas</URL>
+      <Line>9</Line>
+      <Index>6</Index>
+      <Message>Field "AwsSecretKey" defined in type "S3ExtStorageSystem" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>26</EndColumn>
+      <LineInBuildLog>14</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/Jukebox.pas</URL>
+      <Line>28</Line>
+      <Index>7</Index>
+      <Message>Field "ContainerPrefix" defined in type "Jukebox" is never assigned</Message>
+      <ShortMessage>Field is never assigned</ShortMessage>
+      <Code>H8</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>29</EndColumn>
+      <LineInBuildLog>15</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/Jukebox.pas</URL>
+      <Line>46</Line>
+      <Index>8</Index>
+      <Message>Field "SongSecondsOffset" defined in type "Jukebox" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>32</EndColumn>
+      <LineInBuildLog>16</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/Jukebox.pas</URL>
+      <Line>843</Line>
+      <Index>9</Index>
+      <Message>Local variable "ExitCode" is assigned to but never read</Message>
+      <ShortMessage>Variable is assigned but never read</ShortMessage>
+      <Code>H11</Code>
+      <StartColumn>3</StartColumn>
+      <EndColumn>21</EndColumn>
+      <LineInBuildLog>17</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/Jukebox.pas</URL>
+      <Line>844</Line>
+      <Index>10</Index>
+      <Message>Local variable "StartedAudioPlayer" is assigned to but never read</Message>
+      <ShortMessage>Variable is assigned but never read</ShortMessage>
+      <Code>H11</Code>
+      <StartColumn>3</StartColumn>
+      <EndColumn>31</EndColumn>
+      <LineInBuildLog>18</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/JukeboxMain.pas</URL>
+      <Line>16</Line>
+      <Index>11</Index>
+      <Message>Field "UpdateMode" defined in type "JukeboxMain" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>25</EndColumn>
+      <LineInBuildLog>19</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/IniReader.pas</URL>
+      <Line>113</Line>
+      <Index>12</Index>
+      <Message>This statement cannot be reached</Message>
+      <ShortMessage>Statement is unreachable</ShortMessage>
+      <Code>H14</Code>
+      <StartColumn>1</StartColumn>
+      <EndColumn>1</EndColumn>
+      <LineInBuildLog>20</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/Utils.pas</URL>
+      <Line>189</Line>
+      <Index>13</Index>
+      <Message>This statement cannot be reached</Message>
+      <ShortMessage>Statement is unreachable</ShortMessage>
+      <Code>H14</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>5</EndColumn>
+      <LineInBuildLog>21</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{FEE2E5B8-D55F-4147-9D36-938E40F5C9AB}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>255</Line>
+      <Index>14</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>39</EndColumn>
+      <LineInBuildLog>34</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>264</Line>
+      <Index>15</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>40</EndColumn>
+      <LineInBuildLog>35</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>273</Line>
+      <Index>16</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>41</EndColumn>
+      <LineInBuildLog>36</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertySet.pas</URL>
+      <Line>282</Line>
+      <Index>17</Index>
+      <Message>Expression will always evaluate to "True"</Message>
+      <ShortMessage>Will always be True</ShortMessage>
+      <Code>H0</Code>
+      <StartColumn>24</StartColumn>
+      <EndColumn>42</EndColumn>
+      <LineInBuildLog>37</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/PropertyValue.pas</URL>
+      <Line>15</Line>
+      <Index>18</Index>
+      <Message>Field "IsNullValue" defined in type "PropertyValue" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>26</EndColumn>
+      <LineInBuildLog>38</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/S3ExtStorageSystem.pas</URL>
+      <Line>8</Line>
+      <Index>19</Index>
+      <Message>Field "AwsAccessKey" defined in type "S3ExtStorageSystem" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>26</EndColumn>
+      <LineInBuildLog>39</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/S3ExtStorageSystem.pas</URL>
+      <Line>9</Line>
+      <Index>20</Index>
+      <Message>Field "AwsSecretKey" defined in type "S3ExtStorageSystem" is assigned to but never read</Message>
+      <ShortMessage>Field is assigned but never read</ShortMessage>
+      <Code>H7</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>26</EndColumn>
+      <LineInBuildLog>40</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/IniReader.pas</URL>
+      <Line>113</Line>
+      <Index>21</Index>
+      <Message>This statement cannot be reached</Message>
+      <ShortMessage>Statement is unreachable</ShortMessage>
+      <Code>H14</Code>
+      <StartColumn>1</StartColumn>
+      <EndColumn>1</EndColumn>
+      <LineInBuildLog>41</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+    <Message>
+      <URL>file://Mac/Home/Documents/RemObjects%20Software/Elements/Water/WaterWinOxygeneCloudJukebox/CloudJukeboxSharedProject/Utils.pas</URL>
+      <Line>189</Line>
+      <Index>22</Index>
+      <Message>This statement cannot be reached</Message>
+      <ShortMessage>Statement is unreachable</ShortMessage>
+      <Code>H14</Code>
+      <StartColumn>5</StartColumn>
+      <EndColumn>5</EndColumn>
+      <LineInBuildLog>42</LineInBuildLog>
+      <Type>4</Type>
+      <ProjectID>{66B29DF4-47C2-4FE3-88C1-B3AEA64A5EC5}</ProjectID>
+      <Target>Island-Windows</Target>
+    </Message>
+  </BuildMessages>
+  <Watches>
+    <Watch>ContainerName</Watch>
+  </Watches>
+  <BreakpointsEnabled>True</BreakpointsEnabled>
+  <BreakpointsEnabledWhenTesting>True</BreakpointsEnabledWhenTesting>
+  <UseBreakpointsFromAllSolutions>False</UseBreakpointsFromAllSolutions>
+  <BuildActivity>0</BuildActivity>
+  <BuildActivityGoal>Build</BuildActivityGoal>
+  <BuildActivityFailedTask />
+  <BuildActivityFailedProject />
+  <BuildLog>"C:\Program Files (x86)\RemObjects Software\Elements\Bin\EBuild.exe" --logger:fire "\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\WaterWinOxygeneCloudJukebox.sln" --configuration:Debug --build --setting:TreatFixableErrorsAsWarnings=True "--xml:\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\obj\WaterWinOxygeneCloudJukebox.water.xml" --no-goal --verbosity:normal
+RemObjects EBuild. An open source build engine for Elements and beyond.
+Copyright RemObjects Software 2016-2022. All Rights Reserved. Created by marc hoffman.
+Version 11.0.0.2803 (develop) built on bajor, 20221230-182619. Commit 0f80018.
+
+   No exact Windows SDK version was specified for target 'Island-Windows', using 'Windows 10.0.22000.0'.
+   Reference: C:\Program Files (x86)\RemObjects Software\Elements\Island\SDKs\Windows\Windows 10.0.22000.0\x86_64\winrt.fx
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (255)]
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (264)]
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (273)]
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (282)]
+H: Field "IsNullValue" defined in type "PropertyValue" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertyValue.pas (15)]
+H: Field "AwsAccessKey" defined in type "S3ExtStorageSystem" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\S3ExtStorageSystem.pas (8)]
+H: Field "AwsSecretKey" defined in type "S3ExtStorageSystem" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\S3ExtStorageSystem.pas (9)]
+H: Field "ContainerPrefix" defined in type "Jukebox" is never assigned [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\Jukebox.pas (28)]
+H: Field "SongSecondsOffset" defined in type "Jukebox" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\Jukebox.pas (46)]
+H: Local variable "ExitCode" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\Jukebox.pas (843)]
+H: Local variable "StartedAudioPlayer" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\Jukebox.pas (844)]
+H: Field "UpdateMode" defined in type "JukeboxMain" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\JukeboxMain.pas (16)]
+H: This statement cannot be reached [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\IniReader.pas (113)]
+H: This statement cannot be reached [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\Utils.pas (189)]
+   No exact Windows SDK version was specified for target 'Island-Windows', using 'Windows 10.0.22000.0'.
+   Reference 'Island' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\References\Island\Windows\x86_64\Island.fx' for target 'Island-Windows'.
+   Reference 'Island' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\References\Island\Windows\x86_64\Island.fx' for target 'Island-Windows' (x86_64).
+   Reference 'gc' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\Island\SDKs\Windows\Windows 10.0.22000.0\x86_64\gc.fx' for target 'Island-Windows'.
+   Reference 'gc' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\Island\SDKs\Windows\Windows 10.0.22000.0\x86_64\gc.fx' for target 'Island-Windows' (x86_64).
+   Reference 'EUnit' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\References\Island\Windows\x86_64\EUnit.fx' for target 'Island-Windows'.
+   Reference 'EUnit' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\References\Island\Windows\x86_64\EUnit.fx' for target 'Island-Windows' (x86_64).
+   Reference 'Elements' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\References\Island\Windows\x86_64\Elements.fx' for target 'Island-Windows'.
+   Reference 'Elements' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\References\Island\Windows\x86_64\Elements.fx' for target 'Island-Windows' (x86_64).
+   Reference 'rtl' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\Island\SDKs\Windows\Windows 10.0.22000.0\x86_64\rtl.fx' for target 'Island-Windows'.
+   Reference 'rtl' was resolved to 'C:\Program Files (x86)\RemObjects Software\Elements\Island\SDKs\Windows\Windows 10.0.22000.0\x86_64\rtl.fx' for target 'Island-Windows' (x86_64).
+   Reference: C:\Program Files (x86)\RemObjects Software\Elements\Island\SDKs\Windows\Windows 10.0.22000.0\x86_64\winrt.fx
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (255)]
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (264)]
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (273)]
+H: Expression will always evaluate to "True" [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertySet.pas (282)]
+H: Field "IsNullValue" defined in type "PropertyValue" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\PropertyValue.pas (15)]
+H: Field "AwsAccessKey" defined in type "S3ExtStorageSystem" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\S3ExtStorageSystem.pas (8)]
+H: Field "AwsSecretKey" defined in type "S3ExtStorageSystem" is assigned to but never read [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\S3ExtStorageSystem.pas (9)]
+H: This statement cannot be reached [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\IniReader.pas (113)]
+H: This statement cannot be reached [\\Mac\Home\Documents\RemObjects Software\Elements\Water\WaterWinOxygeneCloudJukebox\CloudJukeboxSharedProject\Utils.pas (189)]
+   Solution 'WaterWinOxygeneCloudJukebox' built successfully.</BuildLog>
+  <ProfilerResults />
+  <NavigationStack>
+    <Backward />
+    <Forward />
+  </NavigationStack>
+</Cache>
