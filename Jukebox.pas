@@ -1419,6 +1419,16 @@ begin
       end;
       {$ELSE}
       var Album := Deserializer.Read<Album>;
+      if Album <> nil then begin
+        const NumberTracks = Album.Tracks.Count;
+        if NumberTracks > 0 then begin
+          for i := 0 to NumberTracks-1 do begin
+            const Track = Album.Tracks.Item[i];
+            ListTrackObjects.Add(Track.ObjectName);
+          end;
+          Success := true;
+        end;
+      end;
       {$ENDIF}
     end
     else begin
@@ -1519,7 +1529,10 @@ begin
             if not SongFound then begin
               writeLn("error: unable to retrieve metadata for '{0}'", EncodedSong);
             end;
+          end;
 
+          if SongsAdded > 0 then begin
+            Success := true;
           end;
         end;
       end;
