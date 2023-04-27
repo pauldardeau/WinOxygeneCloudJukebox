@@ -39,6 +39,11 @@
     <Content Include="Properties\App.ico" />
     <Compile Include="TestJBUtils.pas" />
     <Compile Include="TestIniReader.pas" />
+    <Compile Include="TestArgumentParser.pas" />
+    <Compile Include="TestKeyValuePairs.pas" />
+    <Compile Include="TestPropertyList.pas" />
+    <Compile Include="TestPropertyValue.pas" />
+    <Compile Include="TestStringSet.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
