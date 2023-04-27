@@ -23,5 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)S3ExtStorageSystem.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyValuePairs.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)JukeboxOptions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Album.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Playlist.pas" />
   </ItemGroup>
 </Project>

@@ -8,17 +8,34 @@ interface
 type
   Jukebox = public class
   public
-    const downloadExtension = ".download";
-    const albumContainer = "albums";
-    const albumArtContainer = "album-art";
-    const metadataContainer = "music-metadata";
-    const playlistContainer = "playlists";
+    // containers
+    const albumContainerSuffix = "albums";
+    const albumArtContainerSuffix = "album-art";
+    const metadataContainerSuffix = "music-metadata";
+    const playlistContainerSuffix = "playlists";
     const songContainerSuffix = "-artist-songs";
+
+    // directories
     const nameAlbumArtImportDir = "album-art-import";
     const namePlaylistImportDir = "playlist-import";
     const nameSongImportDir = "song-import";
     const nameSongPlayDir = "song-play";
+
+    // files
+    const downloadExtension = ".download";
+    const jukeboxPidFileName = "jukebox.pid";
+    const JsonFileExt = ".json";
+    const IniFileName = "audio_player.ini";
     const defaultDbFileName = "jukebox_db.sqlite3";
+
+    // audio file INI contents
+    const keyAudioPlayerExeFileName = "audio_player_exe_file_name";
+    const keyAudioPlayerCommandArgs = "audio_player_command_args";
+    const keyAudioPlayerResumeArgs = "audio_player_resume_args";
+
+    // placeholders
+    const phAudioFilePath = "%%AUDIO_FILE_PATH%%";
+    const phStartSongTimeOffset = "%%START_SONG_TIME_OFFSET%%";
 
   private
     JukeboxOptions: JukeboxOptions;
@@ -32,11 +49,16 @@ type
     SongPlayDirPath: String;
     AlbumArtImportDirPath: String;
     MetadataDbFile: String;
+    MetadataContainer: String;
+    PlaylistContainer: String;
+    AlbumContainer: String;
+    AlbumArtContainer: String;
     SongList: List<SongMetadata>;
     NumberSongs: Integer;
     SongIndex: Integer;
     AudioPlayerExeFileName: String;
     AudioPlayerCommandArgs: String;
+    AudioPlayerResumeArgs: String;
     AudioPlayerProcess: Process;
     SongPlayLengthSeconds: Integer;
     CumulativeDownloadBytes: Int64;
@@ -50,9 +72,11 @@ type
 
   public
     class method InitializeStorageSystem(StorageSys: StorageSystem;
+                                         aContainerPrefix: String;
                                          DebugPrint: Boolean): Boolean;
     constructor(JbOptions: JukeboxOptions;
                 StorageSys: StorageSystem;
+                aContainerPrefix: String;
                 aDebugPrint: Boolean);
     method IsExitRequested: Boolean;
     method Enter: Boolean;
@@ -91,7 +115,7 @@ type
     method UploadMetadataDb: Boolean;
     method ImportPlaylists;
     method ShowPlaylists;
-    method ShowAlbum(Album: String);
+    method ShowAlbum(Artist: String; Album: String);
     method ShowPlaylist(Playlist: String);
     method PlayPlaylist(Playlist: String);
     method PlayAlbum(Artist: String; Album: String);
@@ -100,6 +124,13 @@ type
     method DeleteAlbum(Album: String): Boolean;
     method DeletePlaylist(PlaylistName: String): Boolean;
     method ImportAlbumArt;
+    method RetrieveAlbumTrackObjectList(Artist: String;
+                                        AlbumName: String;
+                                        ListTrackObjects: List<String>): Boolean;
+    method GetPlaylistSongs(PlaylistName: String;
+                            ListSongs: List<SongMetadata>): Boolean;
+    method ReadAudioPlayerConfig;
+
 
   end;
 
@@ -111,6 +142,7 @@ implementation
 //*******************************************************************************
 
 class method Jukebox.InitializeStorageSystem(StorageSys: StorageSystem;
+                                             aContainerPrefix: String;
                                              DebugPrint: Boolean): Boolean;
 begin
   // create the containers that will hold songs
@@ -118,9 +150,9 @@ begin
 
   for i := 0 to ArtistSongChars.Length-1 do begin
     const ch = ArtistSongChars[i];
-    const ContainerName = String.Format("{0}{1}", ch, songContainerSuffix);
+    const ContainerName = aContainerPrefix + String.Format("{0}{1}", ch, songContainerSuffix);
     if not StorageSys.CreateContainer(ContainerName) then begin
-      writeLn(String.Format("error: unable to create container '{0}'", ContainerName));
+      writeLn("error: unable to create container '{0}'", ContainerName);
       result := false;
       exit;
     end;
@@ -128,14 +160,15 @@ begin
 
   // create the other (non-song) containers
   var ContainerNames := new List<String>;
-  ContainerNames.Add(Jukebox.metadataContainer);
-  ContainerNames.Add(Jukebox.albumArtContainer);
-  ContainerNames.Add(Jukebox.albumContainer);
-  ContainerNames.Add(Jukebox.playlistContainer);
+  ContainerNames.Add(Jukebox.metadataContainerSuffix);
+  ContainerNames.Add(Jukebox.albumArtContainerSuffix);
+  ContainerNames.Add(Jukebox.albumContainerSuffix);
+  ContainerNames.Add(Jukebox.playlistContainerSuffix);
 
   for each ContainerName in ContainerNames do begin
-    if not StorageSys.CreateContainer(ContainerName) then begin
-      writeLn(String.Format("error: unable to create container '{0}'", ContainerName));
+    var CnrName := aContainerPrefix + ContainerName;
+    if not StorageSys.CreateContainer(CnrName) then begin
+      writeLn("error: unable to create container '{0}'", CnrName);
       result := false;
       exit;
     end;
@@ -157,18 +190,24 @@ end;
 
 constructor Jukebox(JbOptions: JukeboxOptions;
                     StorageSys: StorageSystem;
+                    aContainerPrefix: String;
                     aDebugPrint: Boolean);
 begin
   JukeboxOptions := JbOptions;
   StorageSystem := StorageSys;
   DebugPrint := aDebugPrint;
   JukeboxDb := nil;
+  ContainerPrefix := aContainerPrefix;
   CurrentDir := JbOptions.Directory;
   SongImportDirPath := Utils.PathJoin(CurrentDir, nameSongImportDir);
   PlaylistImportDirPath := Utils.PathJoin(CurrentDir, namePlaylistImportDir);
   SongPlayDirPath := Utils.PathJoin(CurrentDir, nameSongPlayDir);
   AlbumArtImportDirPath := Utils.PathJoin(CurrentDir, nameAlbumArtImportDir);
   MetadataDbFile := Jukebox.defaultDbFileName;
+  MetadataContainer := ContainerPrefix + Jukebox.metadataContainerSuffix;
+  PlaylistContainer := ContainerPrefix + Jukebox.playlistContainerSuffix;
+  AlbumContainer := ContainerPrefix + Jukebox.albumContainerSuffix;
+  AlbumArtContainer := ContainerPrefix + Jukebox.albumArtContainerSuffix;
   SongList := new List<SongMetadata>();
   NumberSongs := 0;
   SongIndex := -1;
@@ -189,9 +228,9 @@ begin
     DebugPrint := true;
   end;
   if DebugPrint then begin
-    writeLn(String.Format("currentDir = '{0}'", CurrentDir));
-    writeLn(String.Format("songImportDirPath = '{0}'", SongImportDirPath));
-    writeLn(String.Format("songPlayDirPath = '{0}'", SongPlayDirPath));
+    writeLn("currentDir = '{0}'", CurrentDir);
+    writeLn("songImportDirPath = '{0}'", SongImportDirPath);
+    writeLn("songPlayDirPath = '{0}'", SongPlayDirPath);
   end;
 end;
 
@@ -211,13 +250,13 @@ begin
   EnterSuccess := false;
 
   // look for stored metadata in the storage system
-  if StorageSystem.HasContainer(Jukebox.metadataContainer) and
+  if StorageSystem.HasContainer(MetadataContainer) and
      not JukeboxOptions.SuppressMetadataDownload then begin
 
     // metadata container exists, retrieve container listing
     var MetadataFileInContainer := false;
     const ContainerContents =
-      StorageSystem.ListContainerContents(Jukebox.metadataContainer);
+      StorageSystem.ListContainerContents(MetadataContainer);
 
     if ContainerContents.Count > 0 then begin
       for each Container in ContainerContents do begin
@@ -241,7 +280,7 @@ begin
       end;
 
       const DownloadFile = MetadataDbFilePath; // + Jukebox.downloadExtension;
-      if StorageSystem.GetObject(Jukebox.metadataContainer,
+      if StorageSystem.GetObject(MetadataContainer,
                                  MetadataDbFile,
                                  DownloadFile) > 0 then begin
         if DebugPrint then begin
@@ -476,7 +515,7 @@ begin
     ArtistLetter := Artist[0];
   end;
 
-  result := ArtistLetter.ToLower() + theContainerSuffix;
+  result := ContainerPrefix + ArtistLetter.ToLower() + theContainerSuffix;
 end;
 
 //*******************************************************************************
@@ -565,7 +604,7 @@ begin
               FileRead := true;
             end
             else begin
-              writeLn(String.Format("error: unable to read file {0}", FullPath));
+              writeLn("error: unable to read file {0}", FullPath);
             end;
 
             if FileRead then begin
@@ -724,8 +763,8 @@ begin
   if not ExitRequested then begin
     if CumulativeDownloadTime > 0 then begin
       const CumulativeDownloadKb = Real(CumulativeDownloadBytes) / 1000.0;
-      writeLn(String.Format("average download throughput = {0} KB/sec",
-              CumulativeDownloadKb/Int64(CumulativeDownloadTime)));
+      writeLn("average download throughput = {0} KB/sec",
+              CumulativeDownloadKb/Int64(CumulativeDownloadTime));
     end;
     CumulativeDownloadBytes := 0;
     CumulativeDownloadTime := 0;
@@ -741,7 +780,7 @@ begin
   BytesRetrieved := 0;
 
   if DirPath.Length > 0 then begin
-     BytesRetrieved := StorageSystem.GetObject(Fm.ContainerName,
+     BytesRetrieved := StorageSystem.GetObject(ContainerPrefix + Fm.ContainerName,
                                                Fm.ObjectName,
                                                Utils.PathJoin(DirPath,
                                                               Fm.FileUid));
@@ -768,7 +807,7 @@ begin
   end;
 
   if DebugPrint then begin
-    writeLn(String.Format("bytes retrieved: {0}", SongBytesRetrieved));
+    writeLn("bytes retrieved: {0}", SongBytesRetrieved);
   end;
 
   if SongBytesRetrieved > 0 then begin
@@ -785,36 +824,7 @@ begin
       end;
 
       if SongBytesRetrieved <> Song.Fm.StoredFileSize then begin
-        writeLn(String.Format("error: file size check failed for '{0}'", FilePath));
-        result := false;
-        exit;
-      end;
-    end;
-
-    // is it encrypted? if so, unencrypt it
-    var Encrypted := Song.Fm.Encrypted;
-    var Compressed := Song.Fm.Compressed;
-
-    if Encrypted or Compressed then begin
-      var FileContents := Utils.FileReadAllBytes(FilePath);
-      if FileContents.Count = 0 then begin
-        writeLn(String.Format("error: unable to read file {0}", FilePath));
-        result := false;
-        exit;
-      end;
-
-      if Encrypted then begin
-        //TODO: decrypt content
-      end;
-
-      if Compressed then begin
-        //TODO: uncompress content
-      end;
-
-      // re-write out the uncompressed, unencrypted file contents
-      if not Utils.FileWriteAllBytes(FilePath, FileContents) then begin
-        writeLn(String.Format("error: unable to write unencrypted/uncompressed file '{0}'",
-                              FilePath));
+        writeLn("error: file size check failed for '{0}'", FilePath);
         result := false;
         exit;
       end;
@@ -849,7 +859,7 @@ begin
   const SongFilePath = SongPathInPlaylist(Song);
 
   if Utils.FileExists(SongFilePath) then begin
-    writeLn(String.Format("playing {0}", Song.Fm.FileUid));
+    writeLn("playing {0}", Song.Fm.FileUid);
     if AudioPlayerExeFileName.Length > 0 then begin
       var Args := new List<String>();
       if AudioPlayerCommandArgs.Length > 0 then begin
@@ -886,7 +896,7 @@ begin
     end;
   end
   else begin
-    writeLn(String.Format("song file doesn't exist: '{0}'", SongFilePath));
+    writeLn("song file doesn't exist: '{0}'", SongFilePath);
     const FileNotFoundPath = Utils.PathJoin(JukeboxOptions.Directory, "404.txt");
     Utils.FileAppendAllText(FileNotFoundPath, SongFilePath + "\n");
   end;
@@ -981,6 +991,119 @@ begin
   if JukeboxDb <> nil then begin
     SongList := JukeboxDb.RetrieveSongs(Artist, Album);
     PlaySongList(SongList, Shuffle);
+  end;
+end;
+
+//*******************************************************************************
+
+method Jukebox.ReadAudioPlayerConfig;
+begin
+  if not Utils.FileExists(IniFileName) then begin
+    writeLn("error: missing {0} config file", IniFileName);
+    exit;
+  end;
+
+  const osIdentifier = Utils.GetPlatformIdentifier();
+  if osIdentifier = Utils.PLATFORM_UNKNOWN then begin
+    writeLn("error: no audio-player specific lookup defined for this OS (unknown)");
+    exit;
+  end;
+
+  var charsToStrip: array  of Char;
+  charsToStrip := new Char[1];
+  charsToStrip[0] := '"';
+
+  AudioPlayerExeFileName := "";
+  AudioPlayerCommandArgs := "";
+  AudioPlayerResumeArgs := "";
+
+  var iniReader := new IniReader(IniFileName);
+  if not iniReader.ReadFile() then begin
+    writeLn("error: unable to read ini config file '{0}'", IniFileName);
+    exit;
+  end;
+
+  var kvpAudioPlayer := new KeyValuePairs();
+  if not iniReader.ReadSection(osIdentifier, var kvpAudioPlayer) then begin
+    writeLn("error: no config section present for '{0}'", osIdentifier);
+    exit;
+  end;
+
+  var key := keyAudioPlayerExeFileName;
+
+  if kvpAudioPlayer.ContainsKey(key) then begin
+    AudioPlayerExeFileName := kvpAudioPlayer.GetValue(key);
+
+    if AudioPlayerExeFileName.StartsWith('"') and
+       AudioPlayerExeFileName.EndsWith('"') then begin
+
+      AudioPlayerExeFileName := AudioPlayerExeFileName.Trim(charsToStrip);
+    end;
+
+    AudioPlayerExeFileName := AudioPlayerExeFileName.Trim();
+
+    if AudioPlayerExeFileName.Length = 0 then begin
+      writeLn("error: no value given for '{0}' within [{1}]", key, osIdentifier);
+      exit;
+    end;
+  end
+  else begin
+    writeLn("error: {0} missing value for '{1}' within [{2}]", IniFileName, key, osIdentifier);
+    exit;
+  end;
+
+  key := keyAudioPlayerCommandArgs;
+
+  if kvpAudioPlayer.ContainsKey(key) then begin
+    AudioPlayerCommandArgs := kvpAudioPlayer.GetValue(key);
+
+    if AudioPlayerCommandArgs.StartsWith('"') and
+       AudioPlayerCommandArgs.EndsWith('"') then begin
+
+      AudioPlayerCommandArgs := AudioPlayerCommandArgs.Trim(charsToStrip);
+    end;
+
+    AudioPlayerCommandArgs := AudioPlayerCommandArgs.Trim();
+    if AudioPlayerCommandArgs.Length = 0 then begin
+      writeLn("error: no value given for '{0}' within [{1}]", key, osIdentifier);
+      exit;
+    end;
+
+    const placeholder = phAudioFilePath;
+    const posPlaceholder = AudioPlayerCommandArgs.IndexOf(placeholder);
+    if posPlaceholder = -1 then begin
+      writeLn("error: {0} value does not contain placeholder '{1}'", key, placeholder);
+      exit;
+    end;
+  end
+  else begin
+    writeLn("error: {0} missing value for '{1}' within [{2}]", IniFileName, key, osIdentifier);
+    exit;
+  end;
+
+  key := keyAudioPlayerResumeArgs;
+
+  if kvpAudioPlayer.ContainsKey(key) then begin
+    AudioPlayerResumeArgs := kvpAudioPlayer.GetValue(key);
+
+    if AudioPlayerResumeArgs.StartsWith('"') and AudioPlayerResumeArgs.EndsWith('"') then begin
+      AudioPlayerResumeArgs := AudioPlayerResumeArgs.Trim(charsToStrip);
+    end;
+
+    AudioPlayerResumeArgs := AudioPlayerResumeArgs.Trim();
+    if AudioPlayerResumeArgs.Length > 0 then begin
+      const placeholder = phStartSongTimeOffset;
+      const posPlaceholder = AudioPlayerResumeArgs.IndexOf(placeholder);
+      if posPlaceholder = -1 then begin
+        writeLn("error: {0} value does not contain placeholder '{1}'", key, placeholder);
+        writeLn("ignoring '{0}', using '{1}' for song resume", key, keyAudioPlayerCommandArgs);
+        AudioPlayerResumeArgs := "";
+      end;
+    end;
+  end;
+
+  if AudioPlayerResumeArgs.Length = 0 then begin
+    AudioPlayerResumeArgs := AudioPlayerCommandArgs;
   end;
 end;
 
@@ -1132,7 +1255,7 @@ begin
 
   FileContents := Utils.FileReadAllBytes(FilePath);
   if FileContents.Count = 0 then begin
-    writeLn(String.Format("error: unable to read file '{0}'", FilePath));
+    writeLn("error: unable to read file '{0}'", FilePath);
     var emptyBytes: array of Byte;
     result := (false, emptyBytes);
     exit;
@@ -1153,9 +1276,9 @@ var
 begin
   MetadataDbUpload := false;
   HaveMetadataContainer := false;
-  if not StorageSystem.HasContainer(Jukebox.metadataContainer) then
+  if not StorageSystem.HasContainer(MetadataContainer) then
     HaveMetadataContainer :=
-      StorageSystem.CreateContainer(Jukebox.metadataContainer)
+      StorageSystem.CreateContainer(MetadataContainer)
   else
     HaveMetadataContainer := true;
 
@@ -1171,7 +1294,7 @@ begin
       const DbFileContents = Utils.FileReadAllBytes(DbFilePath);
 
       if DbFileContents.Count > 0 then begin
-        MetadataDbUpload := StorageSystem.PutObject(Jukebox.metadataContainer,
+        MetadataDbUpload := StorageSystem.PutObject(MetadataContainer,
                                                     MetadataDbFile,
                                                     DbFileContents,
                                                     nil);
@@ -1211,9 +1334,9 @@ begin
       end;
 
       HaveContainer := false;
-      if not StorageSystem.HasContainer(Jukebox.playlistContainer) then
+      if not StorageSystem.HasContainer(PlaylistContainer) then
         HaveContainer :=
-          StorageSystem.CreateContainer(Jukebox.playlistContainer)
+          StorageSystem.CreateContainer(PlaylistContainer)
       else
         HaveContainer := true;
 
@@ -1227,14 +1350,14 @@ begin
         const ObjectName = FileName;
         (FileRead, FileContents) := ReadFileContents(FullPath);
         if FileRead then begin
-          if StorageSystem.PutObject(Jukebox.playlistContainer,
+          if StorageSystem.PutObject(PlaylistContainer,
                                      ObjectName,
                                      FileContents,
                                      nil) then begin
             writeLn("put of playlist succeeded");
             if not StoreSongPlaylist(ObjectName, FileContents) then begin
               writeLn("storing of playlist to db failed");
-              _ := StorageSystem.DeleteObject(Jukebox.playlistContainer,
+              _ := StorageSystem.DeleteObject(PlaylistContainer,
                                               ObjectName);
             end
             else begin
@@ -1246,7 +1369,7 @@ begin
       end;
 
       if FileImportCount > 0 then begin
-        writeLn(String.Format("{0} playlists imported", FileImportCount));
+        writeLn("{0} playlists imported", FileImportCount);
         UploadMetadataDb;
       end
       else begin
@@ -1267,23 +1390,204 @@ end;
 
 //*******************************************************************************
 
-method Jukebox.ShowAlbum(Album: String);
+method Jukebox.RetrieveAlbumTrackObjectList(Artist: String;
+                                            AlbumName: String;
+                                            ListTrackObjects: List<String>): Boolean;
 begin
-  //TODO: implement ShowAlbum
+  var Success := false;
+  const JsonFileName = String.Format("{0}{1}",
+                                     JBUtils.EncodeArtistAlbum(Artist, AlbumName),
+                                     JsonFileExt);
+  const LocalJsonFile = Utils.PathJoin(SongPlayDirPath, JsonFileName);
+  if StorageSystem.GetObject(AlbumContainer,
+                             JsonFileName,
+                             LocalJsonFile) > 0 then begin
+
+    const AlbumJsonContents = Utils.FileReadAllText(LocalJsonFile);
+    if AlbumJsonContents.Length > 0 then begin
+      var Deserializer := new JsonDeserializer(AlbumJsonContents);
+      {$IFDEF DARWIN}
+      const AlbumJson = Deserializer.Deserialize;
+      const TrackList = AlbumJson.Item["tracks"] as JsonArray;
+      const NumberTracks = TrackList.Count;
+      if NumberTracks > 0 then begin
+        for i := 0 to NumberTracks-1 do begin
+          const Track = TrackList.Item[i];
+          ListTrackObjects.Add(Track.Item["object"].ToString());
+        end;
+        Success := true;
+      end;
+      {$ELSE}
+      var Album := Deserializer.Read<Album>;
+      {$ENDIF}
+    end
+    else begin
+      writeLn("Album json file is empty");
+    end;
+  end
+  else begin
+    writeLn("Unable to retrieve '{0}' from '{1}'", JsonFileName, AlbumContainer);
+  end;
+  result := Success;
+end;
+
+//*******************************************************************************
+
+method Jukebox.GetPlaylistSongs(PlaylistName: String;
+                                ListSongs: List<SongMetadata>): Boolean;
+begin
+  var Success := false;
+  const JsonFileName = String.Format("{0}{1}",
+                                     JBUtils.EncodeValue(PlaylistName),
+                                     JsonFileExt);
+  const LocalJsonFile = Utils.PathJoin(SongPlayDirPath, JsonFileName);
+  if StorageSystem.GetObject(PlaylistContainer,
+                             JsonFileName,
+                             LocalJsonFile) > 0 then begin
+
+    const PlaylistJsonContents = Utils.FileReadAllText(LocalJsonFile);
+    if PlaylistJsonContents.Length > 0 then begin
+      var Deserializer := new JsonDeserializer(PlaylistJsonContents);
+      var FileExtensions := new List<String>;
+      FileExtensions.Add(".flac");
+      FileExtensions.Add(".m4a");
+      FileExtensions.Add(".mp3");
+
+      {$IFDEF DARWIN}
+      const PlaylistJson = Deserializer.Deserialize;
+      const theSongList = PlaylistJson.Item["songs"] as JsonArray;
+      const plNumberSongs = theSongList.Count;
+      if plNumberSongs > 0 then begin
+        var SongsAdded := 0;
+
+        for i := 0 to plNumberSongs-1 do begin
+          const SongJson = theSongList.Item[i];
+          const plArtist = SongJson.Item["artist"].ToString();
+          const plAlbum = SongJson.Item["album"].ToString();
+          const plSong = SongJson.Item["song"].ToString();
+          const EncodedSong = JBUtils.EncodeArtistAlbumSong(plArtist,
+                                                            plAlbum,
+                                                            plSong);
+          var SongFound := false;
+
+          for each FileExtension in FileExtensions do begin
+            const SongUid = EncodedSong + FileExtension;
+            const Song = self.JukeboxDb.RetrieveSong(SongUid);
+            if Song <> nil then begin
+              ListSongs.Add(Song);
+              inc(SongsAdded);
+              SongFound := true;
+              break;
+            end;
+          end;
+
+          if not SongFound then begin
+            writeLn("error: unable to retrieve metadata for '{0}'", EncodedSong);
+          end;
+        end;
+
+        if SongsAdded > 0 then begin
+          Success := true;
+        end;
+      end;
+      {$ELSE}
+      var Playlist := Deserializer.Read<Playlist>;
+      if Playlist <> nil then begin
+        if Playlist.Songs.Count > 0 then begin
+          var SongsAdded := 0;
+
+          for each plSongObj in Playlist.Songs do begin
+            const plArtist = plSongObj.Artist;
+            const plAlbum = plSongObj.Album;
+            const plSong = plSongObj.Song;
+            const EncodedSong = JBUtils.EncodeArtistAlbumSong(plArtist,
+                                                              plAlbum,
+                                                              plSong);
+            var SongFound := false;
+
+            for each FileExtension in FileExtensions do begin
+              const SongUid = EncodedSong + FileExtension;
+              const Song = self.JukeboxDb.RetrieveSong(SongUid);
+              if Song <> nil then begin
+                ListSongs.Add(Song);
+                inc(SongsAdded);
+                SongFound := true;
+                break;
+              end;
+            end;
+
+            if not SongFound then begin
+              writeLn("error: unable to retrieve metadata for '{0}'", EncodedSong);
+            end;
+
+          end;
+        end;
+      end;
+      {$ENDIF}
+    end
+    else begin
+      writeLn("Playlist json file is empty");
+    end;
+  end
+  else begin
+    writeLn("Unable to retrieve '{0}' from '{1}'",
+            JsonFileName,
+            PlaylistContainer);
+  end;
+  result := Success;
+end;
+
+//*******************************************************************************
+
+method Jukebox.ShowAlbum(Artist: String; Album: String);
+begin
+  var ListTrackObjects: List<String> := new List<String>;
+  if RetrieveAlbumTrackObjectList(Artist, Album, ListTrackObjects) then begin
+    writeLn("Album: {0} ({1}):", Album, Artist);
+    var i: Integer := 1;
+    for each SongObject in ListTrackObjects do begin
+      const SongName = SongFromFileName(SongObject);
+      writeLn("{0}  {1}", i, SongName);
+      inc(i);
+    end;
+  end
+  else begin
+    writeLn("Unable to retrieve album '{0}/{1}'", Artist, Album);
+  end;
 end;
 
 //*******************************************************************************
 
 method Jukebox.ShowPlaylist(Playlist: String);
 begin
-  //TODO: implement ShowPlaylist
+  var ListSongs := new List<SongMetadata>;
+  if GetPlaylistSongs(Playlist, ListSongs) then begin
+    for each Song in ListSongs do begin
+      writeLn("{0} : {1}", Song.SongName, Song.ArtistName);
+    end;
+  end
+  else begin
+    writeLn("unable to retrieve playlist {0} in {1}", Playlist, PlaylistContainer);
+  end;
 end;
 
 //*******************************************************************************
 
 method Jukebox.PlayPlaylist(Playlist: String);
 begin
-  //TODO: implement PlayPlaylist
+  //ScopePlaylist = Playlist;
+  var PlaylistSongsFound := false;
+  var theListSongs := new List<SongMetadata>;
+  if GetPlaylistSongs(Playlist, theListSongs) then begin
+    if theListSongs.Count > 0 then begin
+      PlaylistSongsFound := true;
+      PlaySongList(theListSongs, false);
+    end
+  end;
+
+  if not PlaylistSongsFound then begin
+    writeLn("error: unable to retrieve playlist songs");
+  end;
 end;
 
 //*******************************************************************************
@@ -1332,8 +1636,7 @@ begin
       else begin
         for each Song in theSongList do begin
           if not DeleteSong(Song.Fm.ObjectName, false) then begin
-            writeLn(String.Format("error deleting song '{0}'",
-                                  Song.Fm.ObjectName));
+            writeLn("error deleting song '{0}'", Song.Fm.ObjectName);
             result := false;
             exit;
           end;
@@ -1365,19 +1668,16 @@ begin
         if ListAlbumSongs.Count > 0 then begin
           var NumSongsDeleted := 0;
           for each Song in ListAlbumSongs do begin
-            writeLn(String.Format("{0} {1}",
-                                  Song.Fm.ContainerName,
-                                  Song.Fm.ObjectName));
+            writeLn("{0} {1}", Song.Fm.ContainerName, Song.Fm.ObjectName);
             // delete each song audio file
-            if StorageSystem.DeleteObject(Song.Fm.ContainerName,
+            if StorageSystem.DeleteObject(ContainerPrefix + Song.Fm.ContainerName,
                                           Song.Fm.ObjectName) then begin
               inc(NumSongsDeleted);
               // delete song metadata
               JukeboxDb.DeleteSong(Song.Fm.ObjectName);
             end
             else begin
-              writeLn(String.Format("error: unable to delete song {0}",
-                                    Song.Fm.ObjectName));
+              writeLn("error: unable to delete song {0}", Song.Fm.ObjectName);
             end;
           end;
           if NumSongsDeleted > 0 then begin
@@ -1386,9 +1686,9 @@ begin
             AlbumDeleted := true;
           end
           else begin
-            writeLn(String.Format("no songs found for artist='{0}' album name='{1}'",
-                                  Artist,
-                                  AlbumName));
+            writeLn("no songs found for artist='{0}' album name='{1}'",
+                    Artist,
+                    AlbumName);
           end;
         end;
       end;
@@ -1414,10 +1714,10 @@ begin
       if ObjectName.Length > 0 then begin
         const DbDeleted = JukeboxDb.DeletePlaylist(PlaylistName);
         if DbDeleted then begin
-          writeLn(String.Format("container='{0}', object='{1}'",
-                                Jukebox.playlistContainer,
-                                ObjectName));
-          if StorageSystem.DeleteObject(Jukebox.playlistContainer,
+          writeLn("container='{0}', object='{1}'",
+                  PlaylistContainer,
+                  ObjectName);
+          if StorageSystem.DeleteObject(PlaylistContainer,
                                         ObjectName) then begin
             IsDeleted := true;
           end
@@ -1464,9 +1764,9 @@ begin
 
       HaveContainer := false;
 
-      if not StorageSystem.HasContainer(Jukebox.albumArtContainer) then
+      if not StorageSystem.HasContainer(AlbumArtContainer) then
         HaveContainer :=
-          StorageSystem.CreateContainer(Jukebox.albumArtContainer)
+          StorageSystem.CreateContainer(AlbumArtContainer)
       else
         HaveContainer := true;
 
@@ -1480,7 +1780,7 @@ begin
         const ObjectName = FileName;
         (FileRead, FileContents) := ReadFileContents(FullPath);
         if FileRead then begin
-          if StorageSystem.PutObject(Jukebox.albumArtContainer,
+          if StorageSystem.PutObject(AlbumArtContainer,
                                      ObjectName,
                                      FileContents,
                                      nil) then begin
@@ -1490,8 +1790,7 @@ begin
       end;
 
       if FileImportCount > 0 then begin
-        writeLn(String.Format("{0} album art files imported",
-                              FileImportCount));
+        writeLn("{0} album art files imported", FileImportCount);
       end
       else begin
         writeLn("no files imported");

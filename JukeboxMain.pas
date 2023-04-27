@@ -23,7 +23,8 @@ type
     method ConnectStorageSystem(SystemName: String;
                                 Credentials: PropertySet;
                                 Prefix: String): StorageSystem;
-    method InitStorageSystem(StorageSys: StorageSystem): Boolean;
+    method InitStorageSystem(StorageSys: StorageSystem;
+                             ContainerPrefix: String): Boolean;
     method ShowUsage;
     method RunJukeboxCommand(jukebox: Jukebox; Command: String): Integer;
     method Run(ConsoleArgs: ImmutableList<String>): Int32;
@@ -77,11 +78,14 @@ end;
 
 //*******************************************************************************
 
-method JukeboxMain.InitStorageSystem(StorageSys: StorageSystem): Boolean;
+method JukeboxMain.InitStorageSystem(StorageSys: StorageSystem;
+                                     ContainerPrefix: String): Boolean;
 var
   Success: Boolean;
 begin
-  if Jukebox.InitializeStorageSystem(StorageSys, DebugMode) then begin
+  if Jukebox.InitializeStorageSystem(StorageSys,
+                                     ContainerPrefix,
+                                     DebugMode) then begin
     writeLn("storage system successfully initialized");
     Success := true;
   end
@@ -165,11 +169,11 @@ begin
     jukebox.ShowAlbums();
   end
   else if Command = "show-album" then begin
-    if Album.Length > 0 then begin
-      jukebox.ShowAlbum(Album);
+    if (Artist.Length > 0) and (Album.Length > 0) then begin
+      jukebox.ShowAlbum(Artist, Album);
     end
     else begin
-      writeLn("error: album must be specified using --album option");
+      writeLn("error: artist and album must be specified using --artist and --album options");
       ExitCode := 1;
     end;
   end
@@ -513,7 +517,7 @@ begin
         end;
 
         if Command = "init-storage" then begin
-          if InitStorageSystem(StorageSystem) then begin
+          if InitStorageSystem(StorageSystem, ContainerPrefix) then begin
             result := 0
           end
           else begin
@@ -522,7 +526,7 @@ begin
           exit;
         end;
 
-        const jukebox = new Jukebox(Options, StorageSystem, DebugMode);
+        const jukebox = new Jukebox(Options, StorageSystem, ContainerPrefix, DebugMode);
         if jukebox.Enter() then begin
           ExitCode := RunJukeboxCommand(jukebox, Command);
         end
