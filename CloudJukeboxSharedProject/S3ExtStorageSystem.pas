@@ -5,8 +5,6 @@ type
   S3ExtStorageSystem = public class(StorageSystem)
   private
     DebugMode: Boolean;
-    AwsAccessKey: String;
-    AwsSecretKey: String;
     EndpointUrl: String;
     Region: String;
     Directory: String;
@@ -26,9 +24,7 @@ type
     const scrTemplateGetObject = "s3-get-object.sh";
 
 
-    constructor(AccessKey: String;
-                SecretKey: String;
-                aEndpointUrl: String;
+    constructor(aEndpointUrl: String;
                 aRegion: String;
                 aDirectory: String;
                 aDebugMode: Boolean);
@@ -77,16 +73,12 @@ type
 
 implementation
 
-constructor S3ExtStorageSystem(AccessKey: String;
-                               SecretKey: String;
-                               aEndpointUrl: String;
+constructor S3ExtStorageSystem(aEndpointUrl: String;
                                aRegion: String;
                                aDirectory: String;
                                aDebugMode: Boolean);
 begin
   DebugMode := aDebugMode;
-  AwsAccessKey := AccessKey;
-  AwsSecretKey := SecretKey;
   EndpointUrl := aEndpointUrl;
   Region := aRegion;
   Directory := aDirectory;
