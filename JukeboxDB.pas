@@ -1128,8 +1128,13 @@ begin
     exit nil;
   end
   else begin
-    //result := Encoding.UTF8.GetString(CString);
+    {$IFDEF DARWIN}
+    const Encoding = Foundation.NSStringEncoding.NSUTF8StringEncoding;
+    exit new Foundation.NSString withCString(^AnsiChar(CString))
+                                 encoding(Encoding);
+    {$ELSE}
     exit RemObjects.Elements.System.String.FromPAnsiChar(CString as ^AnsiChar);
+    {$ENDIF}
   end;
 end;
 
