@@ -75,7 +75,7 @@ type
   public
     class method InitializeStorageSystem(StorageSys: StorageSystem;
                                          aContainerPrefix: String;
-                                         DebugPrint: Boolean): Boolean;
+                                         aDebugPrint: Boolean): Boolean;
     constructor(JbOptions: JukeboxOptions;
                 StorageSys: StorageSystem;
                 aContainerPrefix: String;
@@ -89,7 +89,8 @@ type
     method DisplayInfo;
     method GetMetadataDbFilePath: String;
     method StoreSongMetadata(FsSong: SongMetadata): Boolean;
-    method StoreSongPlaylist(FileName: String; FileContents: array of Byte): Boolean;
+    method StoreSongPlaylist(FileName: String;
+                             FileContents: array of Byte): Boolean;
     method ContainerForSong(SongUid: String): String;
     method ImportSongs;
     method SongPathInPlaylist(Song: SongMetadata): String;
@@ -140,18 +141,18 @@ implementation
 
 class method Jukebox.InitializeStorageSystem(StorageSys: StorageSystem;
                                              aContainerPrefix: String;
-                                             DebugPrint: Boolean): Boolean;
+                                             aDebugPrint: Boolean): Boolean;
 begin
   // create the containers that will hold songs
   const ArtistSongChars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
   for i := 0 to ArtistSongChars.Length-1 do begin
     const ch = ArtistSongChars[i];
-    const ContainerName = aContainerPrefix + String.Format("{0}{1}", ch, SONG_CONTAINER_SUFFIX);
+    const ContainerName = aContainerPrefix +
+      String.Format("{0}{1}", ch, SONG_CONTAINER_SUFFIX);
     if not StorageSys.CreateContainer(ContainerName) then begin
       writeLn("error: unable to create container '{0}'", ContainerName);
-      result := false;
-      exit;
+      exit false;
     end;
   end;
 
@@ -166,21 +167,20 @@ begin
     var CnrName := aContainerPrefix + ContainerName;
     if not StorageSys.CreateContainer(CnrName) then begin
       writeLn("error: unable to create container '{0}'", CnrName);
-      result := false;
-      exit;
+      exit false;
     end;
   end;
 
   // delete metadata DB file if present
   const MetadataDbFile = DEFAULT_DB_FILE_NAME;
   if Utils.FileExists(MetadataDbFile) then begin
-    if DebugPrint then begin
+    if aDebugPrint then begin
       writeLn("deleting existing metadata DB file");
     end;
     Utils.DeleteFile(MetadataDbFile);
   end;
 
-  result := true;
+  exit true;
 end;
 
 //*******************************************************************************
@@ -294,8 +294,7 @@ begin
       end;
     end;
 
-    JukeboxDb := new JukeboxDB(GetMetadataDbFilePath(),
-                               true); //debugPrint
+    JukeboxDb := new JukeboxDB(GetMetadataDbFilePath(), DebugPrint);
     EnterSuccess := JukeboxDb.Enter();
     if not EnterSuccess then begin
       writeLn("unable to connect to database");
@@ -424,14 +423,12 @@ end;
 method Jukebox.ContainerForSong(SongUid: String): String;
 begin
   if SongUid.Length = 0 then begin
-    result := "";
-    exit;
+    exit "";
   end;
 
   const Artist = JBUtils.ArtistFromFileName(SongUid);
   if Artist.Length = 0 then begin
-    result := "";
-    exit;
+    exit "";
   end;
 
   var ArtistLetter: String;
@@ -708,10 +705,10 @@ begin
   var BytesRetrieved: Int64 := 0;
 
   if DirPath.Length > 0 then begin
-     BytesRetrieved := StorageSystem.GetObject(Fm.ContainerName,
-                                               Fm.ObjectName,
-                                               Utils.PathJoin(DirPath,
-                                                              Fm.FileUid));
+    const LocalFilePath = Utils.PathJoin(DirPath, Fm.FileUid);
+    BytesRetrieved := StorageSystem.GetObject(Fm.ContainerName,
+                                              Fm.ObjectName,
+                                              LocalFilePath);
   end;
 
   result := BytesRetrieved;
@@ -1186,20 +1183,14 @@ end;
 
 method Jukebox.ReadFileContents(FilePath: String): tuple of (Boolean, array of Byte);
 begin
-  var FileRead := false;
-
   const FileContents = Utils.FileReadAllBytes(FilePath);
   if FileContents.Count = 0 then begin
     writeLn("error: unable to read file '{0}'", FilePath);
     var emptyBytes: array of Byte;
-    result := (false, emptyBytes);
-    exit;
-  end
-  else begin
-    FileRead := true;
+    exit (false, emptyBytes);
   end;
 
-  result := (FileRead, FileContents);
+  exit (true, FileContents);
 end;
 
 //*******************************************************************************
@@ -1501,8 +1492,7 @@ begin
     writeLn("Album: {0} ({1}):", Album, Artist);
     var i: Integer := 1;
     for each SongObject in ListTrackObjects do begin
-      const SongName = JBUtils.SongFromFileName(SongObject);
-      writeLn("{0}  {1}", i, SongName);
+      writeLn("{0}  {1}", i, JBUtils.SongFromFileName(SongObject));
       inc(i);
     end;
   end
@@ -1589,8 +1579,7 @@ begin
         for each Song in theSongList do begin
           if not DeleteSong(Song.Fm.ObjectName, false) then begin
             writeLn("error deleting song '{0}'", Song.Fm.ObjectName);
-            result := false;
-            exit;
+            exit false;
           end;
         end;
         UploadMetadataDb;
@@ -1599,7 +1588,7 @@ begin
     end;
   end;
 
-  result := IsDeleted;
+  exit IsDeleted;
 end;
 
 //*******************************************************************************
