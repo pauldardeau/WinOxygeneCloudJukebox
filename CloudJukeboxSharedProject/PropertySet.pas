@@ -37,7 +37,9 @@ type
     method GetBoolValue(PropName: String): Boolean;
     method GetStringValue(PropName: String): String;
     method GetDoubleValue(PropName: String): Real;
-    method Count():Integer;
+    method Count(): Integer;
+    method ToString: String; override;
+    method PopulateFromString(EncodedPropertySet: String): Boolean;
     method WriteToFile(FileName: String): Boolean;
     method ReadFromFile(FileName: String): Boolean;
   end;
@@ -72,21 +74,21 @@ end;
 
 method PropertySet.Contains(PropName: String): Boolean;
 begin
-  result := MapProps.ContainsKey(PropName);
+  exit MapProps.ContainsKey(PropName);
 end;
 
 //*******************************************************************************
 
 method PropertySet.GetKeys(): ImmutableList<String>;
 begin
-  result := MapProps.Keys;
+  exit MapProps.Keys;
 end;
 
 //*******************************************************************************
 
 method PropertySet.Get(PropName: String): PropertyValue;
 begin
-  result := MapProps.Item[PropName];
+  exit MapProps.Item[PropName];
 end;
 
 //*******************************************************************************
@@ -95,9 +97,9 @@ method PropertySet.GetIntValue(PropName: String): Integer;
 begin
   var pv := Get(PropName);
   if pv <> nil then
-    result := pv.GetIntValue
+    exit pv.GetIntValue
   else
-    result := 0;
+    exit 0;
 end;
 
 //*******************************************************************************
@@ -106,9 +108,9 @@ method PropertySet.GetLongValue(PropName: String): Int64;
 begin
   var pv := Get(PropName);
   if pv <> nil then
-    result := pv.GetLongValue
+    exit pv.GetLongValue
   else
-    result := 0;
+    exit 0;
 end;
 
 //*******************************************************************************
@@ -117,9 +119,9 @@ method PropertySet.GetULongValue(PropName: String): UInt64;
 begin
   var pv := Get(PropName);
   if pv <> nil then
-    result := pv.GetULongValue
+    exit pv.GetULongValue
   else
-    result := 0;
+    exit 0;
 end;
 
 //*******************************************************************************
@@ -128,9 +130,9 @@ method PropertySet.GetBoolValue(PropName: String): Boolean;
 begin
   var pv := Get(PropName);
   if pv <> nil then
-    result := pv.GetBoolValue
+    exit pv.GetBoolValue
   else
-    result := false;
+    exit false;
 end;
 
 //*******************************************************************************
@@ -139,9 +141,9 @@ method PropertySet.GetStringValue(PropName: String): String;
 begin
   var pv := Get(PropName);
   if pv <> nil then
-    result := pv.GetStringValue
+    exit pv.GetStringValue
   else
-    result := "";
+    exit "";
 end;
 
 //*******************************************************************************
@@ -150,25 +152,24 @@ method PropertySet.GetDoubleValue(PropName: String): Real;
 begin
   var pv := Get(PropName);
   if pv <> nil then
-    result := pv.GetDoubleValue
+    exit pv.GetDoubleValue
   else
-    result := 0.0;
+    exit 0.0;
 end;
 
 //*******************************************************************************
 
-method PropertySet.Count():Integer;
+method PropertySet.Count(): Integer;
 begin
-  result := MapProps.Count;
+  exit MapProps.Count;
 end;
 
 //*******************************************************************************
 
-method PropertySet.WriteToFile(FileName: String): Boolean;
-var
-  FileContents: StringBuilder;
+method PropertySet.ToString: String;
 begin
-  FileContents := new StringBuilder;
+  var Encoded := new StringBuilder;
+  const nl = Environment.LineBreak;
 
   for each PropName in GetKeys() do begin
     const PV = Get(PropName);
@@ -181,47 +182,52 @@ begin
       else begin
         BoolValue := VALUE_FALSE;
       end;
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_BOOL, PropName, BoolValue));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_BOOL, PropName, BoolValue));
     end
     else if PV.IsString() then begin
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_STRING, PropName, PV.GetStringValue()));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_STRING, PropName, PV.GetStringValue()));
     end
     else if PV.IsInt() then begin
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_INT, PropName, PV.GetIntValue()));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_INT, PropName, PV.GetIntValue()));
     end
     else if PV.IsLong() then begin
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_LONG, PropName, PV.GetLongValue()));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_LONG, PropName, PV.GetLongValue()));
     end
     else if PV.IsULong() then begin
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_ULONG, PropName, PV.GetULongValue()));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_ULONG, PropName, PV.GetULongValue()));
     end
     else if PV.IsDouble() then begin
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_DOUBLE, PropName, PV.GetDoubleValue()));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_DOUBLE, PropName, PV.GetDoubleValue()));
     end
     else if PV.IsNull() then begin
-      FileContents.Append(String.Format("{0}|{1}|{2}\n", TYPE_NULL, PropName, " "));
+      Encoded.Append(String.Format("{0}|{1}|{2}" + nl, TYPE_NULL, PropName, " "));
     end;
   end;
 
-  result := Utils.FileWriteAllText(FileName, FileContents.ToString());
+  exit Encoded.ToString;
 end;
 
 //*******************************************************************************
 
-method PropertySet.ReadFromFile(FileName: String): Boolean;
+method PropertySet.WriteToFile(FileName: String): Boolean;
+begin
+  exit Utils.FileWriteAllText(FileName, ToString());
+end;
+
+//*******************************************************************************
+
+method PropertySet.PopulateFromString(EncodedPropertySet: String): Boolean;
 var
-  Success: Boolean;
   IntValue: Int32;
   LongValue: Int64;
   ULongValue: Int64;
   DoubleValue: Real;
 begin
-  Success := false;
+  var Success := false;
 
-  const FileContents = Utils.FileReadAllText(FileName);
-  if FileContents <> nil then begin
-    if FileContents.Length > 0 then begin
-      const FileLines = FileContents.Split("\n");
+  if EncodedPropertySet <> nil then begin
+    if EncodedPropertySet.Length > 0 then begin
+      const FileLines = EncodedPropertySet.Split(Environment.LineBreak);
       for each FileLine in FileLines do begin
         const StrippedFileLine = FileLine.Trim();
         if StrippedFileLine.Length > 0 then begin
@@ -298,7 +304,14 @@ begin
     end;
   end;
 
-  result := Success;
+  exit Success;
+end;
+
+//*******************************************************************************
+
+method PropertySet.ReadFromFile(FileName: String): Boolean;
+begin
+  exit PopulateFromString(Utils.FileReadAllText(FileName));
 end;
 
 //*******************************************************************************

@@ -13,7 +13,7 @@ type
     method AddPair(Key: String; Value: String);
     method Clear;
     method ContainsKey(Key: String): Boolean;
-    method Count():Integer;
+    method Count(): Integer;
     method GetValue(Key: String): String;
     method GetKeys(): ImmutableList<String>;
     method ShowContents;
@@ -49,28 +49,28 @@ end;
 
 method KeyValuePairs.ContainsKey(Key: String): Boolean;
 begin
-  result := DictKeyValues.ContainsKey(Key);
+  exit DictKeyValues.ContainsKey(Key);
 end;
 
 //*****************************************************************************
 
 method KeyValuePairs.Count(): Integer;
 begin
-  result := DictKeyValues.Count;
+  exit DictKeyValues.Count;
 end;
 
 //*****************************************************************************
 
 method KeyValuePairs.GetValue(Key: String): String;
 begin
-  result := DictKeyValues[Key];
+  exit DictKeyValues[Key];
 end;
 
 //*****************************************************************************
 
 method KeyValuePairs.GetKeys(): ImmutableList<String>;
 begin
-  result := DictKeyValues.Keys;
+  exit DictKeyValues.Keys;
 end;
 
 //*****************************************************************************
@@ -81,5 +81,7 @@ begin
     writeLn("key = '{0}', value = '{1}'", key, GetValue(key));
   end;
 end;
+
+//*****************************************************************************
 
 end.

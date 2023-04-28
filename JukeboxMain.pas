@@ -77,6 +77,8 @@ type
     constructor;
     method ConnectFsSystem(Credentials: PropertySet;
                            Prefix: String): StorageSystem;
+    method ConnectS3System(Credentials: PropertySet;
+                           Prefix: String): StorageSystem;
     method ConnectStorageSystem(SystemName: String;
                                 Credentials: PropertySet;
                                 Prefix: String): StorageSystem;
@@ -120,12 +122,44 @@ end;
 
 //*******************************************************************************
 
+method JukeboxMain.ConnectS3System(Credentials: PropertySet;
+                                   Prefix: String): StorageSystem;
+begin
+  var theEndpointUrl := "";
+  var theRegion := "";
+
+  if Credentials.Contains(S3_ENDPOINT_URL) then begin
+    theEndpointUrl := Credentials.GetStringValue(S3_ENDPOINT_URL);
+  end;
+
+  if Credentials.Contains(S3_REGION) then begin
+    theRegion := Credentials.GetStringValue(S3_REGION);
+  end;
+
+  if DebugMode then begin
+    writeLn("{0}={1}", S3_ENDPOINT_URL, theEndpointUrl);
+    if (theRegion.Length > 0) then begin
+      writeLn("{0}={1}", S3_REGION, theRegion);
+    end;
+  end;
+
+  exit new S3ExtStorageSystem(theEndpointUrl,
+                              theRegion,
+                              Directory,
+                              DebugMode);
+end;
+
+//*******************************************************************************
+
 method JukeboxMain.ConnectStorageSystem(SystemName: String;
                                         Credentials: PropertySet;
                                         Prefix: String): StorageSystem;
 begin
   if SystemName = SS_FS then begin
     exit ConnectFsSystem(Credentials, Prefix);
+  end
+  else if (SystemName = SS_S3) or (SystemName= "s3ext") then begin
+    exit ConnectS3System(Credentials, Prefix);
   end
   else begin
     writeLn("error: unrecognized storage system {0}", SystemName);
@@ -355,19 +389,15 @@ begin
   Playlist := "";
 
   var OptParser := new ArgumentParser;
-  OptParser.AddOptionalBoolFlag("--debug", "run in debug mode");
-  OptParser.AddOptionalIntArgument("--file-cache-count", "number of songs to buffer in cache");
-  OptParser.AddOptionalBoolFlag("--integrity-checks", "check file integrity after download");
-  OptParser.AddOptionalBoolFlag("--compress", "use gzip compression");
-  OptParser.AddOptionalBoolFlag("--encrypt", "encrypt file contents");
-  OptParser.AddOptionalStringArgument("--key", "encryption key");
-  OptParser.AddOptionalStringArgument("--keyfile", "path to file containing encryption key");
-  OptParser.AddOptionalStringArgument("--storage", "storage system type (s3, swift, azure)");
-  OptParser.AddOptionalStringArgument("--artist", "limit operations to specified artist");
-  OptParser.AddOptionalStringArgument("--playlist", "limit operations to specified playlist");
-  OptParser.AddOptionalStringArgument("--song", "limit operations to specified song");
-  OptParser.AddOptionalStringArgument("--album", "limit operations to specified album");
-  OptParser.AddOptionalStringArgument("--directory", "specify directory where audio player should run");
+  OptParser.AddOptionalBoolFlag(ARG_PREFIX+ARG_DEBUG, "run in debug mode");
+  OptParser.AddOptionalIntArgument(ARG_PREFIX+ARG_FILE_CACHE_COUNT, "number of songs to buffer in cache");
+  OptParser.AddOptionalBoolFlag(ARG_PREFIX+ARG_INTEGRITY_CHECKS, "check file integrity after download");
+  OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_STORAGE, "storage system type (s3, fs)");
+  OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_ARTIST, "limit operations to specified artist");
+  OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_PLAYLIST, "limit operations to specified playlist");
+  OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_SONG, "limit operations to specified song");
+  OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_ALBUM, "limit operations to specified album");
+  OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_DIRECTORY, "specify directory where audio player should run");
   OptParser.AddRequiredArgument(ARG_COMMAND, "command for jukebox");
 
   var Args := OptParser.ParseArgs(ConsoleArgs);
@@ -401,10 +431,11 @@ begin
   if Args.Contains(ARG_STORAGE) then begin
     const Storage = Args.GetStringValue(ARG_STORAGE);
     SupportedSystems := new StringSet;
-    SupportedSystems.Add("fs");
+    SupportedSystems.Add(SS_FS);
+    SupportedSystems.Add(SS_S3);
     if not SupportedSystems.Contains(Storage) then begin
       writeLn("error: invalid storage type {0}", Storage);
-      //printf("supported systems are: %s\n", supported_systems.to_string());
+      writeLn("supported systems are: {0}", SupportedSystems.ToString());
       exit 1;
     end
     else begin
@@ -444,16 +475,8 @@ begin
     end;
 
     var ContainerPrefix := "";
-
-  {$IFDEF WINDOWS}
-  const CredsFile = "win_" + StorageType + CREDS_FILE_SUFFIX;
-  {$ELSE}
-  const CredsFile = StorageType + CREDS_FILE_SUFFIX;
-  {$ENDIF}
-
+    const CredsFile = StorageType + CREDS_FILE_SUFFIX;
     Creds := new PropertySet;
-    //const cwd = Utils.GetCurrentDirectory();
-    //const CredsFilePath = Utils.PathJoin(cwd, CredsFile);
     const CredsFilePath = Utils.PathJoin(Directory, CredsFile);
 
     if Utils.FileExists(CredsFilePath) then begin
