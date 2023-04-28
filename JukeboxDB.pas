@@ -170,7 +170,7 @@ begin
       exit;
     end
     else begin
-      writeLn(String.Format("error: prepare of sql failed: {0}", SqlStatement));
+      writeLn("error: prepare of sql failed: {0}", SqlStatement);
     end;
   end;
   result := nil;
@@ -217,9 +217,9 @@ begin
   var queryCount := sqlite3.sqlite3_bind_parameter_count(Stmt);
 
   if 0 <> queryCount then begin
-    writeLn(String.Format("Error: the bind count is not correct for the #" +
-                          " of variables ({0}) (executeUpdate)",
-                          SqlStatement));
+    writeLn("Error: the bind count is not correct for the #" +
+            " of variables ({0}) (executeUpdate)",
+            SqlStatement);
     sqlite3.sqlite3_finalize(Stmt);
     RowsAffectedCount := 0;
     result := false;
@@ -232,16 +232,16 @@ begin
     // all is well, let's return.
   end
   else if sqlite3.SQLITE_ERROR = rc then begin
-    writeLn(String.Format("Error calling sqlite3_step ({0}) SQLITE_ERROR", rc));
-    writeLn(String.Format("DB Query: {0}", SqlStatement));
+    writeLn("Error calling sqlite3_step ({0}) SQLITE_ERROR", rc);
+    writeLn("DB Query: {0}", SqlStatement);
   end
   else if sqlite3.SQLITE_MISUSE = rc then begin
-    writeLn(String.Format("Error calling sqlite3_step ({0}) SQLITE_MISUSE", rc));
-    writeLn(String.Format("DB Query: {0}", SqlStatement));
+    writeLn("Error calling sqlite3_step ({0}) SQLITE_MISUSE", rc);
+    writeLn("DB Query: {0}", SqlStatement);
   end
   else begin
-    writeLn(String.Format("Unknown error calling sqlite3_step ({0}) other error", rc));
-    writeLn(String.Format("DB Query: {0}", SqlStatement));
+    writeLn("Unknown error calling sqlite3_step ({0}) other error", rc);
+    writeLn("DB Query: {0}", SqlStatement);
   end;
 
   assert(rc <> sqlite3.SQLITE_ROW);
@@ -288,9 +288,9 @@ begin
   var QueryCount := sqlite3.sqlite3_bind_parameter_count(Stmt);
 
   if Arguments.Count() <> QueryCount then begin
-    writeLn(String.Format("Error: the bind count is not correct for the #" +
-                          " of variables ({0}) (executeUpdate)",
-                          SqlStatement));
+    writeLn("Error: the bind count is not correct for the #" +
+            " of variables ({0}) (executeUpdate)",
+            SqlStatement);
     sqlite3.sqlite3_finalize(Stmt);
     RowsAffectedCount := 0;
     result := false;
@@ -325,7 +325,7 @@ begin
 
     if rc <> sqlite3.SQLITE_OK then begin
       sqlite3.sqlite3_finalize(Stmt);
-      writeLn(String.Format("Error: unable to bind argument {0}, rc={1}", argIndex, rc));
+      writeLn("Error: unable to bind argument {0}, rc={1}", argIndex, rc);
       result := false;
       exit;
     end;
@@ -337,16 +337,16 @@ begin
     // all is well, let's return.
   end
   else if sqlite3.SQLITE_ERROR = rc then begin
-    writeLn(String.Format("Error calling sqlite3_step ({0}) SQLITE_ERROR", rc));
-    writeLn(String.Format("DB Query: {0}", SqlStatement));
+    writeLn("Error calling sqlite3_step ({0}) SQLITE_ERROR", rc);
+    writeLn("DB Query: {0}", SqlStatement);
   end
   else if sqlite3.SQLITE_MISUSE = rc then begin
-    writeLn(String.Format("Error calling sqlite3_step ({0}) SQLITE_MISUSE", rc));
-    writeLn(String.Format("DB Query: {0}", SqlStatement));
+    writeLn("Error calling sqlite3_step ({0}) SQLITE_MISUSE", rc);
+    writeLn("DB Query: {0}", SqlStatement);
   end
   else begin
-    writeLn(String.Format("Unknown error calling sqlite3_step ({0}) other error", rc));
-    writeLn(String.Format("DB Query: {0}", SqlStatement));
+    writeLn("Unknown error calling sqlite3_step ({0}) other error", rc);
+    writeLn("DB Query: {0}", SqlStatement);
   end;
 
   assert(rc <> sqlite3.SQLITE_ROW);
@@ -439,7 +439,7 @@ begin
   if DbConnection <> nil then begin
     var Stmt := PrepareStatement(SqlStatement);
     if Stmt = nil then begin
-      writeLn(String.Format("prepare of statement failed: {0}", SqlStatement));
+      writeLn("prepare of statement failed: {0}", SqlStatement);
       result := false;
       exit;
     end;
@@ -904,7 +904,7 @@ begin
       SqlQuery := SqlQuery + AddedClause;
     end;
 
-    writeLn(String.Format("executing query: {0}", SqlQuery));
+    writeLn("executing query: {0}", SqlQuery);
     var Stmt := PrepareStatement(SqlQuery);
     if Stmt <> nil then begin
       Songs := SongsForQueryResults(Stmt);
@@ -972,7 +972,7 @@ begin
       if (QueryResultCol1 <> nil) and (QueryResultCol2 <> nil) then begin
         Artist := MakeStringFromCString(QueryResultCol1);
         Song := MakeStringFromCString(QueryResultCol2);
-        writeLn(String.Format("{0}, {1}", Artist, Song));
+        writeLn("{0}, {1}", Artist, Song);
       end;
     end;
     sqlite3.sqlite3_finalize(Stmt);
@@ -1075,7 +1075,7 @@ begin
 
       AlbumName := MakeStringFromCString(QueryResultCol1);
       ArtistName := MakeStringFromCString(QueryResultCol2);
-      writeLn(String.Format("{0} ({1})", AlbumName, ArtistName));
+      writeLn("{0} ({1})", AlbumName, ArtistName);
     end;
     sqlite3.sqlite3_finalize(Stmt);
   end;
@@ -1146,7 +1146,7 @@ begin
 
       if not ExecuteUpdate(SqlStatement, var RowsAffected, ArgList) then begin
         Rollback;
-        writeLn(String.Format("error: unable to delete song '{0}'", SongUid));
+        writeLn("error: unable to delete song '{0}'", SongUid);
       end
       else begin
         WasDeleted := Commit;

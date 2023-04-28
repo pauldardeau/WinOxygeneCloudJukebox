@@ -130,7 +130,7 @@ begin
     result := ConnectFsSystem(Credentials, Prefix);
   end
   else begin
-    writeLn(String.Format("error: unrecognized storage system {0}", SystemName));
+    writeLn("error: unrecognized storage system {0}", SystemName);
     result := nil;
   end;
 end;
@@ -389,7 +389,7 @@ begin
   if Args.Contains(ARG_FILE_CACHE_COUNT) then begin
     const FileCacheCount = Args.GetIntValue(ARG_FILE_CACHE_COUNT);
     if DebugMode then begin
-      writeLn(String.Format("setting file cache count={0}", FileCacheCount));
+      writeLn("setting file cache count={0}", FileCacheCount);
     end;
     Options.FileCacheCount := FileCacheCount;
   end;
@@ -406,14 +406,14 @@ begin
     SupportedSystems := new StringSet;
     SupportedSystems.Add("fs");
     if not SupportedSystems.Contains(Storage) then begin
-      writeLn(String.Format("error: invalid storage type {0}", Storage));
+      writeLn("error: invalid storage type {0}", Storage);
       //printf("supported systems are: %s\n", supported_systems.to_string());
       result := 1;
       exit;
     end
     else begin
       if DebugMode then begin
-        writeLn(String.Format("setting storage system to {0}", Storage));
+        writeLn("setting storage system to {0}", Storage);
       end;
       StorageType := Storage;
     end;
@@ -444,7 +444,7 @@ begin
 
   if Args.Contains(ARG_COMMAND) then begin
     if DebugMode then begin
-      writeLn(String.Format("using storage system type {0}", StorageType));
+      writeLn("using storage system type {0}", StorageType);
     end;
 
     var ContainerPrefix := "";
@@ -462,7 +462,7 @@ begin
 
     if Utils.FileExists(CredsFilePath) then begin
       if DebugMode then begin
-        writeLn(String.Format("reading creds file {0}", CredsFilePath));
+        writeLn("reading creds file {0}", CredsFilePath);
       end;
 
       const FileContents = Utils.FileReadAllText(CredsFilePath);
@@ -482,12 +482,12 @@ begin
       end
       else begin
         if DebugMode then begin
-          writeLn(String.Format("error: unable to read file {0}", CredsFilePath));
+          writeLn("error: unable to read file {0}", CredsFilePath);
         end;
       end;
     end
     else begin
-      writeLn(String.Format("no creds file ({0})", CredsFilePath));
+      writeLn("no creds file ({0})", CredsFilePath);
     end;
 
     const Command = Args.GetStringValue(ARG_COMMAND);
@@ -538,7 +538,7 @@ begin
     AllCommands.Append(UpdateCommands);
 
     if not AllCommands.Contains(Command) then begin
-      writeLn(String.Format("Unrecognized command {0}", Command));
+      writeLn("Unrecognized command {0}", Command);
       writeLn("");
       ShowUsage();
     end

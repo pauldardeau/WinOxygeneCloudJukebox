@@ -109,7 +109,7 @@ begin
   const ContainerCreated = Utils.CreateDirectory(ContainerDir);
   if ContainerCreated then begin
     if DebugMode then begin
-      writeLn(String.Format("container created: '{0}'", ContainerName));
+      writeLn("container created: '{0}'", ContainerName);
     end;
   end;
   result := ContainerCreated;
@@ -123,7 +123,7 @@ begin
   const ContainerDeleted = Utils.DeleteDirectory(ContainerDir);
   if ContainerDeleted then begin
     if DebugMode then begin
-      writeLn(String.Format("container deleted: '{0}'", ContainerName));
+      writeLn("container deleted: '{0}'", ContainerName);
     end;
   end;
   result := ContainerDeleted;
