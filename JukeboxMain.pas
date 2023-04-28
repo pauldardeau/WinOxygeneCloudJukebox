@@ -13,7 +13,6 @@ type
     Song: String;
     Playlist: String;
     DebugMode: Boolean;
-    UpdateMode: Boolean;
     Directory: String;
 
   public
@@ -98,7 +97,6 @@ implementation
 constructor JukeboxMain;
 begin
   DebugMode := false;
-  UpdateMode := false;
 end;
 
 //*******************************************************************************
@@ -111,12 +109,12 @@ begin
     if DebugMode then begin
       writeLn("{0} = '{1}'", FS_ROOT_DIR, RootDir);
     end;
-    result := new FSStorageSystem(RootDir, DebugMode);
+    exit new FSStorageSystem(RootDir, DebugMode);
   end
   else begin
     writeLn("error: '{0}' must be specified in {1}{2}",
             FS_ROOT_DIR, SS_FS, CREDS_FILE_SUFFIX);
-    result := nil;
+    exit nil;
   end;
 end;
 
@@ -127,11 +125,11 @@ method JukeboxMain.ConnectStorageSystem(SystemName: String;
                                         Prefix: String): StorageSystem;
 begin
   if SystemName = SS_FS then begin
-    result := ConnectFsSystem(Credentials, Prefix);
+    exit ConnectFsSystem(Credentials, Prefix);
   end
   else begin
     writeLn("error: unrecognized storage system {0}", SystemName);
-    result := nil;
+    exit nil;
   end;
 end;
 
@@ -139,9 +137,8 @@ end;
 
 method JukeboxMain.InitStorageSystem(StorageSys: StorageSystem;
                                      ContainerPrefix: String): Boolean;
-var
-  Success: Boolean;
 begin
+  var Success: Boolean;
   if Jukebox.InitializeStorageSystem(StorageSys,
                                      ContainerPrefix,
                                      DebugMode) then begin
@@ -152,7 +149,7 @@ begin
     writeLn("error: unable to initialize storage system");
     Success := false;
   end;
-  result := Success;
+  exit Success;
 end;
 
 //*******************************************************************************
@@ -192,12 +189,9 @@ end;
 //*******************************************************************************
 
 method JukeboxMain.RunJukeboxCommand(jukebox: Jukebox; Command: String): Integer;
-var
-  ExitCode: Integer;
-  Shuffle: Boolean;
 begin
-  ExitCode := 0;
-  Shuffle := false;
+  var ExitCode := 0;
+  var Shuffle := false;
 
   if Command = CMD_IMPORT_SONGS then begin
     jukebox.ImportSongs();
@@ -244,7 +238,8 @@ begin
       jukebox.ShowPlaylist(Playlist);
     end
     else begin
-      writeLn("error: playlist must be specified using {0}{1} option", ARG_PREFIX, ARG_PLAYLIST);
+      writeLn("error: playlist must be specified using {0}{1} option",
+              ARG_PREFIX, ARG_PLAYLIST);
       ExitCode := 1;
     end;
   end
@@ -253,7 +248,8 @@ begin
       jukebox.PlayPlaylist(Playlist);
     end
     else begin
-      writeLn("error: playlist must be specified using {0}{1} option", ARG_PREFIX, ARG_PLAYLIST);
+      writeLn("error: playlist must be specified using {0}{1} option",
+              ARG_PREFIX, ARG_PLAYLIST);
       ExitCode := 1;
     end;
   end
@@ -271,7 +267,8 @@ begin
       end;
     end
     else begin
-      writeLn("error: song must be specified using {0}{1} option", ARG_PREFIX, ARG_SONG);
+      writeLn("error: song must be specified using {0}{1} option",
+              ARG_PREFIX, ARG_SONG);
       ExitCode := 1;
     end
   end
@@ -286,7 +283,8 @@ begin
       end
     end
     else begin
-      writeLn("error: artist must be specified using {0}{1} option", ARG_PREFIX, ARG_ARTIST);
+      writeLn("error: artist must be specified using {0}{1} option",
+              ARG_PREFIX, ARG_ARTIST);
       ExitCode := 1;
     end;
   end
@@ -301,7 +299,8 @@ begin
       end;
     end
     else begin
-      writeLn("error: album must be specified using {0}{1} option", ARG_PREFIX, ARG_ALBUM);
+      writeLn("error: album must be specified using {0}{1} option",
+              ARG_PREFIX, ARG_ALBUM);
       ExitCode := 1;
     end;
   end
@@ -316,7 +315,8 @@ begin
       end;
     end
     else begin
-      writeLn("error: playlist must be specified using {0}{1} option", ARG_PREFIX, ARG_PLAYLIST);
+      writeLn("error: playlist must be specified using {0}{1} option",
+              ARG_PREFIX, ARG_PLAYLIST);
       ExitCode := 1;
     end;
   end
@@ -333,15 +333,13 @@ begin
     jukebox.ImportAlbumArt();
   end;
 
-  result := ExitCode;
+  exit ExitCode;
 end;
 
 //*******************************************************************************
 
 method JukeboxMain.Run(ConsoleArgs: ImmutableList<String>): Int32;
 var
-  ExitCode: Integer;
-  StorageType: String;
   SupportedSystems: StringSet;
   HelpCommands: StringSet;
   NonHelpCommands: StringSet;
@@ -349,8 +347,8 @@ var
   AllCommands: StringSet;
   Creds: PropertySet;
 begin
-  ExitCode := 0;
-  StorageType := SS_FS;
+  var ExitCode := 0;
+  var StorageType := SS_FS;
   Artist := "";
   Album := "";
   Song := "";
@@ -375,8 +373,7 @@ begin
   var Args := OptParser.ParseArgs(ConsoleArgs);
   if Args = nil then begin
     writeLn("error: unable to obtain command-line arguments");
-    result := 1;
-    exit;
+    exit 1;
   end;
 
   var Options := new JukeboxOptions;
@@ -408,8 +405,7 @@ begin
     if not SupportedSystems.Contains(Storage) then begin
       writeLn("error: invalid storage type {0}", Storage);
       //printf("supported systems are: %s\n", supported_systems.to_string());
-      result := 1;
-      exit;
+      exit 1;
     end
     else begin
       if DebugMode then begin
@@ -558,10 +554,6 @@ begin
           Options.SuppressMetadataDownload := false;
         end;
 
-        if UpdateCommands.Contains(Command) then begin
-          UpdateMode := true;
-        end;
-
         Options.Directory := Directory;
 
         var StorageSystem := ConnectStorageSystem(StorageType,
@@ -570,27 +562,27 @@ begin
 
         if StorageSystem = nil then begin
           writeLn("error: unable to connect to storage system");
-          result := 1;
-          exit;
+          exit 1;
         end;
 
         if not StorageSystem.Enter() then begin
           writeLn("error: unable to enter storage system");
-          result := 1;
-          exit;
+          exit 1;
         end;
 
         if Command = CMD_INIT_STORAGE then begin
           if InitStorageSystem(StorageSystem, ContainerPrefix) then begin
-            result := 0
+            exit 0
           end
           else begin
-            result := 1;
+            exit 1;
           end;
-          exit;
         end;
 
-        const jukebox = new Jukebox(Options, StorageSystem, ContainerPrefix, DebugMode);
+        const jukebox = new Jukebox(Options,
+                                    StorageSystem,
+                                    ContainerPrefix,
+                                    DebugMode);
         if jukebox.Enter() then begin
           ExitCode := RunJukeboxCommand(jukebox, Command);
         end
@@ -606,7 +598,7 @@ begin
     ShowUsage();
   end;
 
-  result := ExitCode;
+  exit ExitCode;
 end;
 
 //*******************************************************************************
