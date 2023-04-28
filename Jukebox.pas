@@ -67,7 +67,10 @@ type
     CumulativeDownloadTime: Integer;
     ExitRequested: Boolean;
     IsPaused: Boolean;
+    SongStartTime: Double;
     SongSecondsOffset: Integer;
+    SongPlayIsResume: Boolean;
+    IsRepeatMode: Boolean;
     Downloader: SongDownloader;
     DownloadThread: Thread;
     IniFilePath: String;
@@ -210,6 +213,7 @@ begin
   SongIndex := -1;
   AudioPlayerExeFileName := "";
   AudioPlayerCommandArgs := "";
+  AudioPlayerResumeArgs := "";
   AudioPlayerProcess := nil;
   SongPlayLengthSeconds := 20;
   CumulativeDownloadBytes := 0;
@@ -217,6 +221,8 @@ begin
   ExitRequested := false;
   IsPaused := false;
   SongSecondsOffset := 0;
+  SongPlayIsResume := false;
+  IsRepeatMode := false;
   Downloader := nil;
   DownloadThread := nil;
   IniFilePath := Utils.PathJoin(JbOptions.Directory, "jukebox.ini");
@@ -228,6 +234,8 @@ begin
     writeLn("currentDir = '{0}'", CurrentDir);
     writeLn("songImportDirPath = '{0}'", SongImportDirPath);
     writeLn("songPlayDirPath = '{0}'", SongPlayDirPath);
+    writeLn("playlistImportDirPath = '{0}'", PlaylistImportDirPath);
+    writeLn("albumArtImportDirPath = '{0}'", AlbumArtImportDirPath);
   end;
 end;
 
@@ -235,7 +243,7 @@ end;
 
 method Jukebox.IsExitRequested: Boolean;
 begin
-  result := ExitRequested;
+  exit ExitRequested;
 end;
 
 //*******************************************************************************
@@ -298,6 +306,13 @@ begin
     EnterSuccess := JukeboxDb.Enter();
     if not EnterSuccess then begin
       writeLn("unable to connect to database");
+    end;
+  end
+  else begin
+    if DebugPrint then begin
+      if not StorageSystem.HasContainer(MetadataContainer) then begin
+        writeLn("metadata container '{0}' does not exist", MetadataContainer);
+      end;
     end;
   end;
 
@@ -382,7 +397,7 @@ end;
 
 method Jukebox.GetMetadataDbFilePath: String;
 begin
-  result := Utils.PathJoin(CurrentDir, MetadataDbFile);
+  exit Utils.PathJoin(CurrentDir, MetadataDbFile);
 end;
 
 //*******************************************************************************
@@ -537,8 +552,6 @@ begin
 
             if FileRead then begin
               if FileContents.Length > 0 then begin
-                // now that we have the data that will be stored, set the file size for
-                // what's being stored
                 fsSong.Fm.StoredFileSize := Int64(FileContents.Length);
                 //startUploadTime := time.Now()
 
@@ -705,8 +718,9 @@ begin
   var BytesRetrieved: Int64 := 0;
 
   if DirPath.Length > 0 then begin
+    const ContainerName = ContainerPrefix + Fm.ContainerName;
     const LocalFilePath = Utils.PathJoin(DirPath, Fm.FileUid);
-    BytesRetrieved := StorageSystem.GetObject(Fm.ContainerName,
+    BytesRetrieved := StorageSystem.GetObject(ContainerName,
                                               Fm.ObjectName,
                                               LocalFilePath);
   end;
@@ -719,16 +733,13 @@ end;
 method Jukebox.DownloadSong(Song: SongMetadata): Boolean;
 begin
   if ExitRequested then begin
-    result := false;
-    exit;
+    exit false;
   end;
 
   const FilePath = SongPathInPlaylist(Song);
-  //downloadStartTime := time.time()
   const SongBytesRetrieved = RetrieveFile(Song.Fm, SongPlayDirPath);
   if ExitRequested then begin
-    result := false;
-    exit;
+    exit false;
   end;
 
   if DebugPrint then begin
@@ -736,9 +747,6 @@ begin
   end;
 
   if SongBytesRetrieved > 0 then begin
-    //downloadEndTime := time.time()
-    //downloadElapsedTime := downloadEndTime - downloadStartTime
-    //cumulativeDownloadTime += downloadElapsedTime
     CumulativeDownloadBytes := CumulativeDownloadBytes + SongBytesRetrieved;
 
     // are we checking data integrity?
@@ -751,14 +759,12 @@ begin
 
       if SongBytesRetrieved <> Song.Fm.StoredFileSize then begin
         writeLn("error: file size check failed for '{0}'", FilePath);
-        result := false;
-        exit;
+        exit false;
       end;
     end;
 
     if CheckFileIntegrity(Song) then begin
-      result := true;
-      exit;
+      exit true;
     end
     else begin
       // we retrieved the file, but it failed our integrity check
@@ -769,7 +775,7 @@ begin
     end;
   end;
 
-  result := false;
+  exit false;
 end;
 
 //*******************************************************************************
@@ -777,22 +783,49 @@ end;
 method Jukebox.PlaySong(Song: SongMetadata);
 begin
   var ExitCode := -1;
-  var StartedAudioPlayer := false;
 
   const SongFilePath = SongPathInPlaylist(Song);
 
   if Utils.FileExists(SongFilePath) then begin
     writeLn("playing {0}", Song.Fm.FileUid);
     if AudioPlayerExeFileName.Length > 0 then begin
-      var Args := new List<String>();
-      if AudioPlayerCommandArgs.Length > 0 then begin
-        const VecAddlArgs = AudioPlayerCommandArgs.Split(" ");
-        for each AddlArg in VecAddlArgs do begin
-          Args.Add(AddlArg);
+      var didResume := false;
+      var commandArgs := "";
+      if SongPlayIsResume then begin
+        const placeholder = PH_START_SONG_TIME_OFFSET;
+        const posPlaceholder =
+            AudioPlayerResumeArgs.IndexOf(placeholder);
+        if posPlaceholder > -1 then begin
+          commandArgs := AudioPlayerResumeArgs;
+          var theSongStartTime: String := "";
+          const minutes = SongSecondsOffset / 60;
+          if minutes > 0 then begin
+            theSongStartTime := minutes.ToString();
+            theSongStartTime := theSongStartTime + ":";
+            const remainingSeconds = SongSecondsOffset mod 60;
+            var secondsText := remainingSeconds.ToString();
+            if secondsText.Length = 1 then begin
+              secondsText := "0" + secondsText;
+            end;
+            theSongStartTime := theSongStartTime + secondsText;
+          end
+          else begin
+            theSongStartTime := SongSecondsOffset.ToString();
+          end;
+          //writeLn("resuming at '{0}'", songStartTime);
+          commandArgs := commandArgs.Replace(PH_START_SONG_TIME_OFFSET, theSongStartTime);
+          commandArgs := commandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
+          didResume := true;
+          //writeLn("commandArgs: '{0}'", commandArgs);
         end;
       end;
-      Args.Add(SongFilePath);
 
+      if not didResume then begin
+        commandArgs := AudioPlayerCommandArgs;
+        commandArgs := commandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
+      end;
+
+      const Args = commandArgs.Split(" ");
       const Env = new Dictionary<String,String>();
 
       AudioPlayerProcess := new Process();
@@ -800,12 +833,13 @@ begin
                                          Args,
                                          Env,
                                          SongPlayDirPath);
+      AudioPlayerProcess := nil;
 
       // if the audio player failed or is not present, just sleep
       // for the length of time that audio would be played
-      //if (not StartedAudioPlayer) and (ExitCode <> 0) then begin
-        //TimeSleepSeconds(SongPlayLengthSeconds);
-      //end;
+      if ExitCode <> 0 then begin
+        Utils.SleepSeconds(SongPlayLengthSeconds);
+      end;
     end
     else begin
       // we don't know about an audio player, so simulate a
@@ -821,7 +855,8 @@ begin
   else begin
     writeLn("song file doesn't exist: '{0}'", SongFilePath);
     const FileNotFoundPath = Utils.PathJoin(JukeboxOptions.Directory, "404.txt");
-    Utils.FileAppendAllText(FileNotFoundPath, SongFilePath + "\n");
+    Utils.FileAppendAllText(FileNotFoundPath,
+                            SongFilePath + Environment.LineBreak);
   end;
 end;
 
@@ -849,7 +884,7 @@ begin
     end;
   end;
 
-  var FileCacheCount := JukeboxOptions.FileCacheCount;
+  const FileCacheCount = JukeboxOptions.FileCacheCount;
 
   if SongFileCount < FileCacheCount then begin
     // start looking at the next song in the list
@@ -912,6 +947,7 @@ end;
 
 method Jukebox.PlaySongs(Shuffle: Boolean; Artist: String; Album: String);
 begin
+  //DIFFERENT
   if JukeboxDb <> nil then begin
     SongList := JukeboxDb.RetrieveSongs(Artist, Album);
     PlaySongList(SongList, Shuffle);
@@ -1082,6 +1118,7 @@ begin
   end;
 
   if Shuffle then begin
+    //DIFFERENT
     //TODO: add shuffling of song list
     //songList = random.sample(songList, len(songList))
   end;
@@ -1678,7 +1715,7 @@ begin
     end;
   end;
 
-  result := IsDeleted;
+  exit IsDeleted;
 end;
 
 //*******************************************************************************
