@@ -580,7 +580,7 @@ begin
 
   if Utils.ExecuteProgram(ExecutablePath,
                           ProgramArgs,
-                          var ExitCode,
+                          out ExitCode,
                           out StdOut,
                           out StdErr) then begin
 
@@ -649,7 +649,7 @@ begin
 
   if Utils.ExecuteProgram(ExecutablePath,
                           ProgramArgs,
-                          var ExitCode,
+                          out ExitCode,
                           out StdOut,
                           out StdErr) then begin
     if ExitCode = 0 then begin
@@ -676,7 +676,7 @@ begin
   var IsShellScript := false;
   var ExecutablePath := ProgramPath;
 
-  if ProgramPath.EndsWith(".sh") then begin
+  if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     const FileLines = Utils.FileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
       writeLn("RunProgram: unable to read file '{0}'", ProgramPath);
@@ -702,7 +702,7 @@ begin
 
   if Utils.ExecuteProgram(ExecutablePath,
                           ProgramArgs,
-                          var ExitCode,
+                          out ExitCode,
                           out StdOut,
                           out StdErr) then begin
     if ExitCode = 0 then begin
@@ -721,7 +721,8 @@ method S3ExtStorageSystem.PrepareRunScript(ScriptTemplate: String;
 begin
   Utils.DeleteFileIfExists(RunScript);
 
-  if not Utils.FileCopy(Utils.PathJoin(ScriptDirectory, ScriptTemplate), RunScript) then begin
+  const SourceFile = Utils.PathJoin(ScriptDirectory, ScriptTemplate);
+  if not Utils.FileCopy(SourceFile, RunScript) then begin
     exit false;
   end;
 
