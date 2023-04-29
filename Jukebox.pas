@@ -525,7 +525,7 @@ begin
             fsSong.Fm.OriginFileSize := fileSize;
             //let oFile = RemObjects.Elements.RTL.File(fullPath)
             //TODO: assign fileTime
-            //fsSong.Fm.FileTime = oFile.DateModified
+            //fsSong.Fm.FileTime = oFile.DateModified  // DateModified is a DateTime
             fsSong.ArtistName := artist;
             fsSong.SongName := song;
             const md5Hash = Utils.Md5ForFile(IniFilePath, FullPath);
@@ -1179,7 +1179,7 @@ begin
 
     const pidAsText = String.Format("{0}{1}", Utils.GetPid(), Environment.LineBreak);
     const pidFilePath = Utils.PathJoin(JukeboxOptions.Directory,
-                                   JUKEBOX_PID_FILE_NAME);
+                                       JUKEBOX_PID_FILE_NAME);
     Utils.FileWriteAllText(pidFilePath, pidAsText);
 
     try
@@ -1578,7 +1578,8 @@ begin
     writeLn("Album: {0} ({1}):", Album, Artist);
     var i: Integer := 1;
     for each SongObject in ListTrackObjects do begin
-      writeLn("{0}  {1}", i, JBUtils.SongFromFileName(SongObject));
+      const SongName = JBUtils.SongFromFileName(SongObject);
+      writeLn("{0}  {1}", i, SongName);
       inc(i);
     end;
   end
