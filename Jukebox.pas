@@ -83,6 +83,7 @@ type
                 StorageSys: StorageSystem;
                 aContainerPrefix: String;
                 aDebugPrint: Boolean);
+    method InstallSignalHandlers;
     method IsExitRequested: Boolean;
     method Enter: Boolean;
     method Leave;
@@ -237,6 +238,13 @@ begin
     writeLn("playlistImportDirPath = '{0}'", PlaylistImportDirPath);
     writeLn("albumArtImportDirPath = '{0}'", AlbumArtImportDirPath);
   end;
+end;
+
+//*******************************************************************************
+
+method Jukebox.InstallSignalHandlers;
+begin
+  //TODO: set up signal handlers
 end;
 
 //*******************************************************************************
@@ -1136,7 +1144,7 @@ begin
     Utils.DeleteFilesInDirectory(SongPlayDirPath);
   end;
 
-  //InstallSignalHandlers();
+  InstallSignalHandlers();
 
   ReadAudioPlayerConfig();
 
