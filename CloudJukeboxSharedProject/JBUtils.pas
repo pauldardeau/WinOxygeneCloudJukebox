@@ -33,9 +33,7 @@ type
                                  album: String;
                                  song: String): String;
     begin
-      exit EncodeArtistAlbum(artist, album) +
-           DOUBLE_DASHES +
-           EncodeValue(song);
+      exit EncodeArtistAlbum(artist, album) + DOUBLE_DASHES + EncodeValue(song);
     end;
 
 //*******************************************************************************
