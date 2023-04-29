@@ -657,7 +657,8 @@ begin
 
       const PlaylistMd5 = Utils.Md5ForFile(IniFilePath, FilePath);
       if PlaylistMd5.Length = 0 then begin
-        writeLn("error: unable to calculate MD5 hash for file '{0}'", FilePath);
+        writeLn("error: unable to calculate MD5 hash for file '{0}'",
+                FilePath);
         FileIntegrityPassed := false;
       end
       else begin
