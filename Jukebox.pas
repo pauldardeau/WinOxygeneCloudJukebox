@@ -27,10 +27,11 @@ type
     const DOWNLOAD_EXTENSION = ".download";
     const JUKEBOX_PID_FILE_NAME = "jukebox.pid";
     const JSON_FILE_EXT = ".json";
-    const INI_FILE_NAME = "audio_player.ini";
+    const SETTINGS_INI_FILE_NAME = "settings.ini";
     const DEFAULT_DB_FILE_NAME = "jukebox_db.sqlite3";
 
-    // audio file INI contents
+    // audio file INI
+    const AUDIO_INI_FILE_NAME = "audio_player.ini";
     const AUDIO_PLAYER_EXE_FILE_NAME = "audio_player_exe_file_name";
     const AUDIO_PLAYER_COMMAND_ARGS = "audio_player_command_args";
     const AUDIO_PLAYER_RESUME_ARGS = "audio_player_resume_args";
@@ -73,7 +74,8 @@ type
     IsRepeatMode: Boolean;
     Downloader: SongDownloader;
     DownloadThread: Thread;
-    IniFilePath: String;
+    AudioIniFilePath: String;
+    SettingsIniFilePath: String;
 
   public
     class method InitializeStorageSystem(StorageSys: StorageSystem;
@@ -226,7 +228,8 @@ begin
   IsRepeatMode := false;
   Downloader := nil;
   DownloadThread := nil;
-  IniFilePath := Utils.PathJoin(JbOptions.Directory, "jukebox.ini");
+  AudioIniFilePath := Utils.PathJoin(JbOptions.Directory, AUDIO_INI_FILE_NAME);
+  SettingsIniFilePath := Utils.PathJoin(JbOptions.Directory, SETTINGS_INI_FILE_NAME);
 
   if JukeboxOptions.DebugMode then begin
     DebugPrint := true;
@@ -536,7 +539,7 @@ begin
             //fsSong.Fm.FileTime = oFile.DateModified  // DateModified is a DateTime
             fsSong.ArtistName := artist;
             fsSong.SongName := song;
-            const md5Hash = Utils.Md5ForFile(IniFilePath, FullPath);
+            const md5Hash = Utils.Md5ForFile(SettingsIniFilePath, FullPath);
             if md5Hash.Length > 0 then begin
               fsSong.Fm.Md5Hash := md5Hash;
             end;
@@ -663,7 +666,7 @@ begin
       if DebugPrint then
         writeLn("checking integrity for {0}", Song.Fm.FileUid);
 
-      const PlaylistMd5 = Utils.Md5ForFile(IniFilePath, FilePath);
+      const PlaylistMd5 = Utils.Md5ForFile(SettingsIniFilePath, FilePath);
       if PlaylistMd5.Length = 0 then begin
         writeLn("error: unable to calculate MD5 hash for file '{0}'",
                 FilePath);
@@ -989,9 +992,8 @@ end;
 
 method Jukebox.ReadAudioPlayerConfig;
 begin
-  const IniFilePath = Utils.PathJoin(CurrentDir, INI_FILE_NAME);
-  if not Utils.FileExists(IniFilePath) then begin
-    writeLn("error: missing {0} config file", IniFilePath);
+  if not Utils.FileExists(AudioIniFilePath) then begin
+    writeLn("error: missing {0} config file", AudioIniFilePath);
     exit;
   end;
 
@@ -1009,10 +1011,10 @@ begin
   AudioPlayerCommandArgs := "";
   AudioPlayerResumeArgs := "";
 
-  var iniReader := new IniReader(IniFilePath);
+  var iniReader := new IniReader(AudioIniFilePath);
   if not iniReader.ReadFile() then begin
     writeLn("error: unable to read ini config file '{0}'",
-            IniFilePath);
+            AudioIniFilePath);
     exit;
   end;
 
@@ -1049,7 +1051,7 @@ begin
   end
   else begin
     writeLn("error: {0} missing value for '{1}' within [{2}]",
-            INI_FILE_NAME, key, osIdentifier);
+            AUDIO_INI_FILE_NAME, key, osIdentifier);
     exit;
   end;
 
@@ -1082,7 +1084,7 @@ begin
   end
   else begin
     writeLn("error: {0} missing value for '{1}' within [{2}]",
-            INI_FILE_NAME, key, osIdentifier);
+            AUDIO_INI_FILE_NAME, key, osIdentifier);
     exit;
   end;
 
