@@ -1706,6 +1706,7 @@ begin
                     Song.Fm.ContainerName,
                     Song.Fm.ObjectName);
             // delete each song audio file
+            //DIFFERENCE
             if StorageSystem.DeleteObject(Song.Fm.ContainerName,
                                           Song.Fm.ObjectName) then begin
               inc(NumSongsDeleted);
