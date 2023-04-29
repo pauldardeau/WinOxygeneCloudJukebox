@@ -1034,6 +1034,10 @@ begin
               key, osIdentifier);
       exit;
     end;
+
+    if DebugPrint then begin
+      writeLn("audio player: '{0}'", AudioPlayerExeFileName);
+    end;
   end
   else begin
     writeLn("error: {0} missing value for '{1}' within [{2}]",
