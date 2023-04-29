@@ -291,8 +291,6 @@ end;
 method S3ExtStorageSystem.GetObjectMetadata(ContainerName: String;
                                             ObjectName: String;
                                             DictProps: PropertySet): Boolean;
-var
-  StdOut: String;
 begin
   if DebugMode then begin
     writeLn("GetObjectMetadata: Container={0}, Object={1}",
@@ -312,6 +310,7 @@ begin
 
   try
     if PrepareRunScript(ScriptTemplate, RunScript, Kvp) then begin
+      var StdOut: String;
       if RunProgram(RunScript, out StdOut) then begin
         writeLn("{0}", StdOut);
         Success := true;
