@@ -64,7 +64,7 @@ type
         end;
         listFiles.Add(strippedFile);
       end;
-      result := listFiles;
+      exit listFiles;
     end;
 
 //*******************************************************************************
@@ -81,7 +81,7 @@ type
          end;
          listSubdirs.Add(strippedDir);
       end;
-      result := listSubdirs;
+      exit listSubdirs;
     end;
 
 //*******************************************************************************
@@ -106,7 +106,7 @@ type
       else begin
         exit DirPath + FileName;
       end;
-      //result := RemObjects.Elements.RTL.Path.Combine(DirPath, FileName);
+      //exit RemObjects.Elements.RTL.Path.Combine(DirPath, FileName);
     end;
 
 //*******************************************************************************
@@ -149,7 +149,7 @@ type
         end;
       end;
 
-      result := (Root, Ext);
+      exit (Root, Ext);
     end;
 
 //*******************************************************************************
@@ -385,29 +385,28 @@ type
         writeLn("error: Md5ForFile - unable to retrieve platform config values");
       end;
 
-      result := '';
-
+      exit '';
     end;
 
 //*******************************************************************************
 
     method GetPid(): Integer;
     begin
-      result := RemObjects.Elements.System.Process.CurrentProcessId();
+      exit RemObjects.Elements.System.Process.CurrentProcessId();
     end;
 
 //*******************************************************************************
 
     method GetFileSize(FilePath: String): Int64;
     begin
-      result := RemObjects.Elements.RTL.File(FilePath).Size;
+      exit RemObjects.Elements.RTL.File(FilePath).Size;
     end;
 
 //*******************************************************************************
 
     method GetCurrentDirectory: String;
     begin
-      result := RemObjects.Elements.RTL.Environment.CurrentDirectory;
+      exit RemObjects.Elements.RTL.Environment.CurrentDirectory;
     end;
 
 //*******************************************************************************
@@ -421,14 +420,14 @@ type
 
     method GetBaseFileName(FileName: String): String;
     begin
-      result := RemObjects.Elements.RTL.Path.GetFileNameWithoutExtension(FileName);
+      exit RemObjects.Elements.RTL.Path.GetFileNameWithoutExtension(FileName);
     end;
 
 //*******************************************************************************
 
     method GetFileExtension(FileName: String): String;
     begin
-      result := RemObjects.Elements.RTL.File(FileName).Extension;
+      exit RemObjects.Elements.RTL.File(FileName).Extension;
     end;
 
 //*******************************************************************************

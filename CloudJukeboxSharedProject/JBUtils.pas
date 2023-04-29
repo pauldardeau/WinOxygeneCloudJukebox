@@ -10,21 +10,21 @@ type
 
     method DecodeValue(EncodedValue: String): String;
     begin
-      result := EncodedValue.Replace('-', ' ');
+      exit EncodedValue.Replace('-', ' ');
     end;
 
 //*******************************************************************************
 
     method EncodeValue(Value: String): String;
     begin
-      result := Value.Replace(' ', '-');
+      exit Value.Replace(' ', '-');
     end;
 
 //*******************************************************************************
 
     method EncodeArtistAlbum(artist: String; album: String): String;
     begin
-      result := EncodeValue(artist) + DOUBLE_DASHES + EncodeValue(album);
+      exit EncodeValue(artist) + DOUBLE_DASHES + EncodeValue(album);
     end;
 
 //*******************************************************************************
@@ -33,9 +33,9 @@ type
                                  album: String;
                                  song: String): String;
     begin
-      result := EncodeArtistAlbum(artist, album) +
-                DOUBLE_DASHES +
-                EncodeValue(song);
+      exit EncodeArtistAlbum(artist, album) +
+           DOUBLE_DASHES +
+           EncodeValue(song);
     end;
 
 //*******************************************************************************
@@ -58,7 +58,7 @@ type
         s := s.Replace("&", "");
       end;
 
-      result := s;
+      exit s;
     end;
 
 //*******************************************************************************
@@ -66,20 +66,19 @@ type
     method ComponentsFromFileName(FileName: String): tuple of (String, String, String);
     begin
       if FileName.Length = 0 then begin
-        result := ("", "", "");
-        exit;
+        exit ("", "", "");
       end;
 
       const BaseFileName = Utils.GetBaseFileName(FileName);
 
       const Components = BaseFileName.Split(DOUBLE_DASHES, true);
       if Components.Count = 3 then begin
-        result := (DecodeValue(Components[0]),
-                   DecodeValue(Components[1]),
-                   DecodeValue(Components[2]));
+        exit (DecodeValue(Components[0]),
+              DecodeValue(Components[1]),
+              DecodeValue(Components[2]));
       end
       else begin
-        result := ("", "", "");
+        exit ("", "", "");
       end;
     end;
 
@@ -91,7 +90,7 @@ type
       if FileName.Length > 0 then begin
         (Artist, _, _) := ComponentsFromFileName(FileName);
       end;
-      result := Artist;
+      exit Artist;
     end;
 
 //*******************************************************************************
@@ -102,7 +101,7 @@ type
       if FileName.Length > 0 then begin
         (_, Album, _) := ComponentsFromFileName(FileName);
       end;
-      result := Album;
+      exit Album;
     end;
 
 //*******************************************************************************
@@ -113,7 +112,7 @@ type
       if FileName.Length > 0 then begin
         (_, _, Song) := ComponentsFromFileName(FileName);
       end;
-      result := Song;
+      exit Song;
     end;
 
 //*******************************************************************************
