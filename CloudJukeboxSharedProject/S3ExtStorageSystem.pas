@@ -12,6 +12,12 @@ type
     ListContainers: List<String>;
 
   public
+    // Http properties
+    const PROP_CONTENT_LENGTH = "Content-Length";
+    const PROP_CONTENT_TYPE = "Content-Type";
+    const PROP_CONTENT_MD5 = "Content-MD5";
+    const PROP_CONTENT_ENCODING = "Content-Encoding";
+
     // script file extensions (suffixes)
     const SFX_BATCH_FILE = ".bat";
     const SFX_SHELL_SCRIPT = ".sh";
@@ -369,17 +375,17 @@ begin
   var sbMetadataProps := new StringBuilder;
 
   if Headers <> nil then begin
-    if Headers.Contains(PropertySet.PROP_CONTENT_LENGTH) then begin
+    if Headers.Contains(PROP_CONTENT_LENGTH) then begin
       const contentLength =
-           Headers.GetULongValue(PropertySet.PROP_CONTENT_LENGTH);
+           Headers.GetULongValue(PROP_CONTENT_LENGTH);
       sbMetadataProps.Append("contentLength=");
       sbMetadataProps.Append(Convert.ToString(contentLength));
       sbMetadataProps.Append(" ");
     end;
 
-    if Headers.Contains(PropertySet.PROP_CONTENT_TYPE) then begin
+    if Headers.Contains(PROP_CONTENT_TYPE) then begin
       const contentType =
-          Headers.GetStringValue(PropertySet.PROP_CONTENT_TYPE);
+          Headers.GetStringValue(PROP_CONTENT_TYPE);
       // contentType
       if contentType.Length > 0 then begin
         sbMetadataProps.Append("contentType=");
@@ -388,9 +394,9 @@ begin
       end;
     end;
 
-    if Headers.Contains(PropertySet.PROP_CONTENT_MD5) then begin
+    if Headers.Contains(PROP_CONTENT_MD5) then begin
       const contentMd5 =
-        Headers.GetStringValue(PropertySet.PROP_CONTENT_MD5);
+        Headers.GetStringValue(PROP_CONTENT_MD5);
       // md5
       if contentMd5.Length > 0 then begin
         sbMetadataProps.Append("md5=");
@@ -399,9 +405,9 @@ begin
       end;
     end;
 
-    if Headers.Contains(PropertySet.PROP_CONTENT_ENCODING) then begin
+    if Headers.Contains(PROP_CONTENT_ENCODING) then begin
       const contentEncoding =
-        Headers.GetStringValue(PropertySet.PROP_CONTENT_ENCODING);
+        Headers.GetStringValue(PROP_CONTENT_ENCODING);
       // contentEncoding
       if contentEncoding.Length > 0 then begin
         sbMetadataProps.Append("contentEncoding=");

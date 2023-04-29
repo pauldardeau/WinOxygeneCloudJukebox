@@ -8,11 +8,6 @@ type
     MapProps: Dictionary<String, PropertyValue>;
 
   public
-    const PROP_CONTENT_ENCODING = "Content-Encoding";
-    const PROP_CONTENT_LENGTH = "Content-Length";
-    const PROP_CONTENT_TYPE = "Content-Type";
-    const PROP_CONTENT_MD5 = "Content-MD5";
-
     const VALUE_TRUE = "true";
     const VALUE_FALSE = "false";
 
