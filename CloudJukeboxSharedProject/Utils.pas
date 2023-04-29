@@ -75,11 +75,11 @@ type
       const listSubdirs = new List<String>;
       var strippedDir: String;
       for each subDirWithPath in RemObjects.Elements.RTL.Folder(DirPath).GetSubfolders() do begin
-         strippedDir := subDirWithPath.Substring(lenDirPath);
-         if strippedDir[0] = RemObjects.Elements.RTL.Path.DirectorySeparatorChar then begin
-           strippedDir := strippedDir.Substring(1);
-         end;
-         listSubdirs.Add(strippedDir);
+        strippedDir := subDirWithPath.Substring(lenDirPath);
+        if strippedDir[0] = RemObjects.Elements.RTL.Path.DirectorySeparatorChar then begin
+          strippedDir := strippedDir.Substring(1);
+        end;
+        listSubdirs.Add(strippedDir);
       end;
       exit listSubdirs;
     end;
