@@ -980,8 +980,9 @@ end;
 
 method Jukebox.ReadAudioPlayerConfig;
 begin
-  if not Utils.FileExists(INI_FILE_NAME) then begin
-    writeLn("error: missing {0} config file", INI_FILE_NAME);
+  const IniFilePath = Utils.PathJoin(CurrentDir, INI_FILE_NAME);
+  if not Utils.FileExists(IniFilePath) then begin
+    writeLn("error: missing {0} config file", IniFilePath);
     exit;
   end;
 
@@ -999,10 +1000,10 @@ begin
   AudioPlayerCommandArgs := "";
   AudioPlayerResumeArgs := "";
 
-  var iniReader := new IniReader(INI_FILE_NAME);
+  var iniReader := new IniReader(IniFilePath);
   if not iniReader.ReadFile() then begin
     writeLn("error: unable to read ini config file '{0}'",
-            INI_FILE_NAME);
+            IniFilePath);
     exit;
   end;
 
@@ -1140,16 +1141,30 @@ begin
   end;
 
   if Shuffle then begin
-    //TODO: the following code is buggy
-    //var random := new Random;
-    //var n := aSongList.Count;
-    //while (n > 1) do begin
-    //   dec(n);
-    //   const k = random.NextInt(n + 1);
-    //   var value := aSongList[k];
-    //   aSongList[k] := aSongList[n];
-    //   aSongList[n] := value;
-    //end;
+    var random := new Random;
+    var n := aSongList.Count;
+    var GettingValidRandomIndex: Boolean;
+    var k: Integer;
+
+    while (n > 1) do begin
+      dec(n);
+      GettingValidRandomIndex := true;
+      while GettingValidRandomIndex do begin
+        const j = random.NextInt(n + 1);
+        if (j >= aSongList.Count) or (j < 0) then begin
+          // I think this is a bug in NextInt method. Sometimes getting
+          // -1 value.
+          writeLn("*** j = {0}, n = {1}", j, n);
+        end
+        else begin
+          GettingValidRandomIndex := false;
+          k := j;
+        end;
+      end;
+      var value := aSongList[k];
+      aSongList[k] := aSongList[n];
+      aSongList[n] := value;
+    end;
   end;
 
   writeLn("downloading first song...");
@@ -1662,7 +1677,7 @@ end;
 method Jukebox.DeleteAlbum(Album: String): Boolean;
 begin
   var AlbumDeleted := false;
-  const ContainsDoubleDash = Album.contains(DOUBLE_DASHES);
+  const ContainsDoubleDash = Album.Contains(DOUBLE_DASHES);
   if ContainsDoubleDash then begin
     const NameComponents = Album.Split(DOUBLE_DASHES);
     if NameComponents.Count = 2 then begin
@@ -1673,7 +1688,9 @@ begin
         if ListAlbumSongs.Count > 0 then begin
           var NumSongsDeleted := 0;
           for each Song in ListAlbumSongs do begin
-            writeLn("{0} {1}", Song.Fm.ContainerName, Song.Fm.ObjectName);
+            writeLn("{0} {1}",
+                    Song.Fm.ContainerName,
+                    Song.Fm.ObjectName);
             // delete each song audio file
             if StorageSystem.DeleteObject(Song.Fm.ContainerName,
                                           Song.Fm.ObjectName) then begin
@@ -1682,7 +1699,8 @@ begin
               JukeboxDb.DeleteSong(Song.Fm.ObjectName);
             end
             else begin
-              writeLn("error: unable to delete song {0}", Song.Fm.ObjectName);
+              writeLn("error: unable to delete song {0}",
+                      Song.Fm.ObjectName);
             end;
           end;
           if NumSongsDeleted > 0 then begin
