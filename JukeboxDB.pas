@@ -12,6 +12,7 @@ type
     DbConnection: ^sqlite3.sqlite3;
     MetadataDbFilePath: String;
     InTransaction: Boolean;
+    PsRetrieveSong: ^sqlite3.sqlite3_stmt;
 
   public
     constructor(aMetadataDbFilePath: String;
@@ -23,6 +24,8 @@ type
     method Leave;
     method PrepareStatement(SqlStatement: String): ^sqlite3.sqlite3_stmt;
     method StepStatement(Statement: ^sqlite3.sqlite3_stmt): Boolean;
+    method BindStatementArguments(Stmt: ^sqlite3.sqlite3_stmt;
+                                  Arguments: PropertyList): Boolean;
     method ExecuteUpdate(SqlStatement: String;
                          out RowsAffectedCount: Integer): Boolean;
     method ExecuteUpdate(SqlStatement: String;
@@ -37,7 +40,7 @@ type
     method HaveTables: Boolean;
     method GetPlaylist(PlaylistName: String): String;
     method SongsForQueryResults(Statement: ^sqlite3.sqlite3_stmt): List<SongMetadata>;
-    method RetrieveSong(FileName: String): SongMetadata;
+    method RetrieveSong(SongUid: String): SongMetadata;
     method InsertPlaylist(PlUid: String; PlName: String; PlDesc: String): Boolean;
     method DeletePlaylist(PlName: String): Boolean;
     method InsertSong(Song: SongMetadata): Boolean;
@@ -65,13 +68,17 @@ implementation
 constructor JukeboxDB(aMetadataDbFilePath: String;
                       aDebugPrint: Boolean);
 begin
-  DebugPrint := true; //debugPrint;
+  DebugPrint := aDebugPrint;
   DbConnection := nil;
+  PsRetrieveSong := nil;
   InTransaction := false;
   if aMetadataDbFilePath.Length > 0 then
     MetadataDbFilePath := aMetadataDbFilePath
   else
-    MetadataDbFilePath := "jukebox_db.sqlite3";
+    MetadataDbFilePath := Jukebox.DEFAULT_DB_FILE_NAME;
+  if DebugPrint then begin
+    writeLn("JukeboxDB using file {0}", MetadataDbFilePath);
+  end;
 end;
 
 //*******************************************************************************
@@ -111,6 +118,10 @@ method JukeboxDB.Close: Boolean;
 begin
   var DidClose := false;
   if DbConnection <> nil then begin
+    if PsRetrieveSong <> nil then begin
+      sqlite3.sqlite3_finalize(PsRetrieveSong);
+      PsRetrieveSong := nil;
+    end;
     sqlite3.sqlite3_close(DbConnection);
     DbConnection := nil;
     DidClose := true;
@@ -143,6 +154,11 @@ end;
 method JukeboxDB.Leave;
 begin
   if DbConnection <> nil then begin
+    if PsRetrieveSong <> nil then begin
+      sqlite3.sqlite3_finalize(PsRetrieveSong);
+      PsRetrieveSong := nil;
+    end;
+
     sqlite3.sqlite3_close(DbConnection);
     DbConnection := nil;
   end;
@@ -200,38 +216,41 @@ begin
     exit false;
   end;
 
-  const queryCount = sqlite3.sqlite3_bind_parameter_count(Stmt);
+  var rc: Integer;
 
-  if 0 <> queryCount then begin
-    writeLn("Error: the bind count is not correct for the #" +
-            " of variables ({0}) (executeUpdate)",
-            SqlStatement);
-    sqlite3.sqlite3_finalize(Stmt);
-    RowsAffectedCount := 0;
-    exit false;
+  try
+    const queryCount = sqlite3.sqlite3_bind_parameter_count(Stmt);
+
+    if 0 <> queryCount then begin
+      writeLn("Error: the bind count is not correct for the #" +
+              " of variables ({0}) (executeUpdate)",
+              SqlStatement);
+      RowsAffectedCount := 0;
+      exit false;
+    end;
+
+    rc := sqlite3.sqlite3_step(Stmt);
+
+    if (sqlite3.SQLITE_DONE = rc) or (sqlite3.SQLITE_ROW = rc) then begin
+      // all is well, let's return.
+    end
+    else if sqlite3.SQLITE_ERROR = rc then begin
+      writeLn("Error calling sqlite3_step ({0}) SQLITE_ERROR", rc);
+      writeLn("DB Query: {0}", SqlStatement);
+    end
+    else if sqlite3.SQLITE_MISUSE = rc then begin
+      writeLn("Error calling sqlite3_step ({0}) SQLITE_MISUSE", rc);
+      writeLn("DB Query: {0}", SqlStatement);
+    end
+    else begin
+      writeLn("Unknown error calling sqlite3_step ({0}) other error", rc);
+      writeLn("DB Query: {0}", SqlStatement);
+    end;
+
+    assert(rc <> sqlite3.SQLITE_ROW);
+  finally
+    rc := sqlite3.sqlite3_finalize(Stmt);
   end;
-
-  var rc := sqlite3.sqlite3_step(Stmt);
-
-  if (sqlite3.SQLITE_DONE = rc) or (sqlite3.SQLITE_ROW = rc) then begin
-    // all is well, let's return.
-  end
-  else if sqlite3.SQLITE_ERROR = rc then begin
-    writeLn("Error calling sqlite3_step ({0}) SQLITE_ERROR", rc);
-    writeLn("DB Query: {0}", SqlStatement);
-  end
-  else if sqlite3.SQLITE_MISUSE = rc then begin
-    writeLn("Error calling sqlite3_step ({0}) SQLITE_MISUSE", rc);
-    writeLn("DB Query: {0}", SqlStatement);
-  end
-  else begin
-    writeLn("Unknown error calling sqlite3_step ({0}) other error", rc);
-    writeLn("DB Query: {0}", SqlStatement);
-  end;
-
-  assert(rc <> sqlite3.SQLITE_ROW);
-
-  rc := sqlite3.sqlite3_finalize(Stmt);
 
   const SqlSuccess = (rc = sqlite3.SQLITE_OK);
 
@@ -243,6 +262,63 @@ begin
   end;
 
   exit SqlSuccess;
+end;
+
+//*******************************************************************************
+
+method JukeboxDB.BindStatementArguments(Stmt: ^sqlite3.sqlite3_stmt;
+                                        Arguments: PropertyList): Boolean;
+begin
+  try
+    const QueryCount = sqlite3.sqlite3_bind_parameter_count(Stmt);
+
+    if Arguments.Count() <> QueryCount then begin
+      writeLn("Error: the bind count is not correct for the #" +
+              " of variables");
+      exit false;
+    end;
+
+    var argIndex := 0;
+    var rc: Integer;
+
+    for each arg in Arguments.ListProps do begin
+      inc(argIndex);
+      if arg.IsInt() then
+        rc := sqlite3.sqlite3_bind_int(Stmt, argIndex, arg.GetIntValue())
+      else if arg.IsLong() then
+        rc := sqlite3.sqlite3_bind_int64(Stmt, argIndex, arg.GetLongValue())
+      else if arg.IsULong() then begin
+        const longValue = Int64(arg.GetULongValue());
+        rc := sqlite3.sqlite3_bind_int64(Stmt, argIndex, longValue);
+      end
+      else if arg.IsBool() then begin
+        if arg.GetBoolValue() then
+          rc := sqlite3.sqlite3_bind_int(Stmt, argIndex, 1)
+        else
+          rc := sqlite3.sqlite3_bind_int(Stmt, argIndex, 0);
+      end
+      else if arg.IsString() then begin
+        const SV = arg.GetStringValue();
+        //const rawArgument = MakeCStringFromString(SV);
+        const rawArgument = Encoding.UTF8.GetBytes(SV);
+        const pChar = @rawArgument[0];
+        rc := sqlite3.sqlite3_bind_text(Stmt, argIndex, pChar as ^AnsiChar, -1, nil);
+        //rc := sqlite3.sqlite3_bind_text16(Stmt, argIndex, @data[0], -1, nil)
+      end
+      else if arg.IsDouble() then
+        rc := sqlite3.sqlite3_bind_double(Stmt, argIndex, arg.GetDoubleValue())
+      else if arg.IsNull() then
+        rc := sqlite3.sqlite3_bind_null(Stmt, argIndex);
+
+      if rc <> sqlite3.SQLITE_OK then begin
+        writeLn("Error: unable to bind argument {0}, rc={1}", argIndex, rc);
+        exit false;
+      end;
+    end;
+    exit true;
+  except
+      exit false;
+  end;
 end;
 
 //*******************************************************************************
@@ -584,37 +660,54 @@ end;
 
 //*******************************************************************************
 
-method JukeboxDB.RetrieveSong(FileName: String): SongMetadata;
+method JukeboxDB.RetrieveSong(SongUid: String): SongMetadata;
 begin
   var Song: SongMetadata := nil;
 
   if DbConnection <> nil then begin
-    const SqlQuery = "SELECT song_uid," +
-                            "file_time," +
-                            "origin_file_size," +
-                            "stored_file_size," +
-                            "pad_char_count," +
-                            "artist_name," +
-                            "artist_uid," +
-                            "song_name," +
-                            "md5_hash," +
-                            "compressed," +
-                            "encrypted," +
-                            "container_name," +
-                            "object_name," +
-                            "album_uid " +
-                     "FROM song " +
-                     "WHERE song_uid = ?";
-    const Stmt = PrepareStatement(SqlQuery);
-    if Stmt = nil then begin
+    if PsRetrieveSong = nil then begin
+      const SqlQuery = "SELECT song_uid," +
+                              "file_time," +
+                              "origin_file_size," +
+                              "stored_file_size," +
+                              "pad_char_count," +
+                              "artist_name," +
+                              "artist_uid," +
+                              "song_name," +
+                              "md5_hash," +
+                              "compressed," +
+                              "encrypted," +
+                              "container_name," +
+                              "object_name," +
+                              "album_uid " +
+                       "FROM song " +
+                       "WHERE song_uid = ?";
+      const Stmt = PrepareStatement(SqlQuery);
+      if Stmt = nil then begin
+        writeLn("error: unable to prepare statement: {0}", SqlQuery);
+        exit nil;
+      end
+      else begin
+        PsRetrieveSong := Stmt;
+      end;
+    end;
+
+    const Args = new PropertyList;
+    Args.Append(new PropertyValue(SongUid));
+    if not BindStatementArguments(PsRetrieveSong, Args) then begin
+      writeLn("error: unable to bind arguments for statement for RetrieveSong");
       exit nil;
     end;
 
-    const SongResults = SongsForQueryResults(Stmt);
-    if SongResults.Count > 0 then begin
-      Song := SongResults[0];
+    try
+      const SongResults = SongsForQueryResults(PsRetrieveSong);
+      if SongResults.Count > 0 then begin
+        Song := SongResults[0];
+      end;
+    finally
+      sqlite3.sqlite3_reset(PsRetrieveSong);
+      sqlite3.sqlite3_clear_bindings(PsRetrieveSong);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end;
   exit Song;
 end;
