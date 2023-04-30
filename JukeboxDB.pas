@@ -24,9 +24,9 @@ type
     method PrepareStatement(SqlStatement: String): ^sqlite3.sqlite3_stmt;
     method StepStatement(Statement: ^sqlite3.sqlite3_stmt): Boolean;
     method ExecuteUpdate(SqlStatement: String;
-                         var RowsAffectedCount: Integer): Boolean;
+                         out RowsAffectedCount: Integer): Boolean;
     method ExecuteUpdate(SqlStatement: String;
-                         var RowsAffectedCount: Integer;
+                         out RowsAffectedCount: Integer;
                          Arguments: PropertyList): Boolean;
     method BeginTransaction: Boolean;
     method BeginDeferredTransaction: Boolean;
@@ -186,7 +186,7 @@ end;
 //*******************************************************************************
 
 method JukeboxDB.ExecuteUpdate(SqlStatement: String;
-                               var RowsAffectedCount: Integer): Boolean;
+                               out RowsAffectedCount: Integer): Boolean;
 begin
   if DbConnection = nil then begin
     RowsAffectedCount := 0;
@@ -248,7 +248,7 @@ end;
 //*******************************************************************************
 
 method JukeboxDB.ExecuteUpdate(SqlStatement: String;
-                               var RowsAffectedCount: Integer;
+                               out RowsAffectedCount: Integer;
                                Arguments: PropertyList): Boolean;
 begin
   if DbConnection = nil then begin
@@ -352,7 +352,7 @@ begin
   else begin
     InTransaction := true;
     var RowsAffected: Int32 := 0;
-    exit ExecuteUpdate("BEGIN EXCLUSIVE TRANSACTION;", var RowsAffected);
+    exit ExecuteUpdate("BEGIN EXCLUSIVE TRANSACTION;", out RowsAffected);
   end;
 end;
 
@@ -367,7 +367,7 @@ begin
   else begin
     InTransaction := true;
     var RowsAffected: Int32 := 0;
-    exit ExecuteUpdate("BEGIN DEFERRED TRANSACTION;", var RowsAffected);
+    exit ExecuteUpdate("BEGIN DEFERRED TRANSACTION;", out RowsAffected);
   end;
 end;
 
@@ -381,7 +381,7 @@ begin
   end
   else begin
     var RowsAffected: Int32 := 0;
-    result := ExecuteUpdate("ROLLBACK TRANSACTION;", var RowsAffected);
+    result := ExecuteUpdate("ROLLBACK TRANSACTION;", out RowsAffected);
     InTransaction := false;
   end;
 end;
@@ -396,7 +396,7 @@ begin
   end
   else begin
     var RowsAffected: Int32 := 0;
-    result := ExecuteUpdate("COMMIT TRANSACTION;", var RowsAffected);
+    result := ExecuteUpdate("COMMIT TRANSACTION;", out RowsAffected);
     InTransaction := false;
   end;
 end;
@@ -413,14 +413,17 @@ begin
       exit false;
     end;
 
-    if not StepStatement(Stmt) then begin
-      writeLn("error: creation of table failed");
-      writeLn(SqlStatement);
-    end
-    else begin
-      DidSucceed := true;
+    try
+      if not StepStatement(Stmt) then begin
+        writeLn("error: creation of table failed");
+        writeLn(SqlStatement);
+      end
+      else begin
+        DidSucceed := true;
+      end;
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end;
   exit DidSucceed;
 end;
@@ -503,13 +506,16 @@ begin
       exit false;
     end;
 
-    if sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW then begin
-      const Count = sqlite3.sqlite3_column_int(Stmt, 0);
-      if Count > 0 then begin
-        HaveTablesInDb := true;
+    try
+      if sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW then begin
+        const Count = sqlite3.sqlite3_column_int(Stmt, 0);
+        if Count > 0 then begin
+          HaveTablesInDb := true;
+        end;
       end;
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end;
 
   exit HaveTablesInDb;
@@ -528,18 +534,16 @@ begin
     const Stmt = PrepareStatement(SqlQuery);
     if Stmt = nil then begin
       exit nil;
-    end
-    else begin
+    end;
+
+    try
       if sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW then begin
         const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
-        if QueryResultCol1 = nil then begin
-          writeLn("Query result is nil");
-          exit nil;
-        end
-        else begin
+        if QueryResultCol1 <> nil then begin
           PlObject := MakeStringFromCString(QueryResultCol1);
         end;
       end;
+    finally
       sqlite3.sqlite3_finalize(Stmt);
     end;
   end;
@@ -639,7 +643,7 @@ begin
     Args.Append(new PropertyValue(PlDesc));
     var RowsAffected: Int32 := 0;
 
-    if not ExecuteUpdate(SqlStatement, var RowsAffected, Args) then begin
+    if not ExecuteUpdate(SqlStatement, out RowsAffected, Args) then begin
       Rollback;
     end
     else begin
@@ -667,7 +671,7 @@ begin
     Args.Append(new PropertyValue(PlName));
     var RowsAffected: Int32 := 0;
 
-    if not ExecuteUpdate(SqlQuery, var RowsAffected, Args) then begin
+    if not ExecuteUpdate(SqlQuery, out RowsAffected, Args) then begin
       Rollback;
     end
     else begin
@@ -708,7 +712,7 @@ begin
     const SqlQuery = "INSERT INTO song VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     var RowsAffected: Int32 := 0;
 
-    if not ExecuteUpdate(SqlQuery, var RowsAffected, Args) then begin
+    if not ExecuteUpdate(SqlQuery, out RowsAffected, Args) then begin
       Rollback();
     end
     else begin
@@ -764,7 +768,7 @@ begin
                          "album_uid=? " +
                      "WHERE song_uid = ?";
 
-    if not ExecuteUpdate(SqlQuery, var RowsAffected, Args) then begin
+    if not ExecuteUpdate(SqlQuery, out RowsAffected, Args) then begin
       Rollback();
     end
     else begin
@@ -840,10 +844,17 @@ begin
       SqlQuery := SqlQuery + AddedClause;
     end;
 
-    writeLn("executing query: {0}", SqlQuery);
+    if DebugPrint then begin
+      writeLn("executing query: {0}", SqlQuery);
+    end;
+
     const Stmt = PrepareStatement(SqlQuery);
     if Stmt <> nil then begin
-      Songs := SongsForQueryResults(Stmt);
+      try
+        Songs := SongsForQueryResults(Stmt);
+      finally
+        sqlite3.sqlite3_finalize(Stmt);
+      end;
     end;
   end;
 
@@ -875,7 +886,11 @@ begin
     SqlQuery := SqlQuery + " AND artist = ?";
     const Stmt = PrepareStatement(SqlQuery);
     if Stmt <> nil then begin
-      Songs := SongsForQueryResults(Stmt);
+      try
+        Songs := SongsForQueryResults(Stmt);
+      finally
+        sqlite3.sqlite3_finalize(Stmt);
+      end;
     end;
   end;
   exit Songs;
@@ -895,16 +910,19 @@ begin
       exit;
     end;
 
-    while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
-      const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
-      const QueryResultCol2 = sqlite3.sqlite3_column_text(Stmt, 1);
-      if (QueryResultCol1 <> nil) and (QueryResultCol2 <> nil) then begin
-        const Artist = MakeStringFromCString(QueryResultCol1);
-        const Song = MakeStringFromCString(QueryResultCol2);
-        writeLn("{0}, {1}", Artist, Song);
+    try
+      while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
+        const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
+        const QueryResultCol2 = sqlite3.sqlite3_column_text(Stmt, 1);
+        if (QueryResultCol1 <> nil) and (QueryResultCol2 <> nil) then begin
+          const Artist = MakeStringFromCString(QueryResultCol1);
+          const Song = MakeStringFromCString(QueryResultCol2);
+          writeLn("{0}, {1}", Artist, Song);
+        end;
       end;
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end
   else begin
     writeLn("error: DbConnection is nil");
@@ -924,14 +942,17 @@ begin
       exit;
     end;
 
-    while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
-      const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
-      if QueryResultCol1 <> nil then begin
-        const Artist = MakeStringFromCString(QueryResultCol1);
-        writeLn(Artist);
+    try
+      while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
+        const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
+        if QueryResultCol1 <> nil then begin
+          const Artist = MakeStringFromCString(QueryResultCol1);
+          writeLn(Artist);
+        end;
       end;
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end;
 end;
 
@@ -948,18 +969,17 @@ begin
       exit;
     end;
 
-    while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
-      const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
-      if QueryResultCol1 = nil then begin
-        writeLn("Query result is nil");
-        sqlite3.sqlite3_finalize(Stmt);
-        exit;
+    try
+      while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
+        const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
+        if QueryResultCol1 <> nil then begin
+          const GenreName = MakeStringFromCString(QueryResultCol1);
+          writeLn(GenreName);
+        end;
       end;
-
-      const GenreName = MakeStringFromCString(QueryResultCol1);
-      writeLn(GenreName);
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end;
 end;
 
@@ -977,25 +997,19 @@ begin
       exit;
     end;
 
-    while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
-      const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
-      if QueryResultCol1 = nil then begin
-        writeLn("Query result is nil");
-        sqlite3.sqlite3_finalize(Stmt);
-        exit;
+    try
+      while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
+        const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
+        const QueryResultCol2 = sqlite3.sqlite3_column_text(Stmt, 1);
+        if (QueryResultCol1 <> nil) and (QueryResultCol2 <> nil) then begin
+          const AlbumName = MakeStringFromCString(QueryResultCol1);
+          const ArtistName = MakeStringFromCString(QueryResultCol2);
+          writeLn("{0} ({1})", AlbumName, ArtistName);
+        end;
       end;
-      const QueryResultCol2 = sqlite3.sqlite3_column_text(Stmt, 1);
-      if QueryResultCol2 = nil then begin
-        writeLn("Query result is nil");
-        sqlite3.sqlite3_finalize(Stmt);
-        exit;
-      end;
-
-      const AlbumName = MakeStringFromCString(QueryResultCol1);
-      const ArtistName = MakeStringFromCString(QueryResultCol2);
-      writeLn("{0} ({1})", AlbumName, ArtistName);
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-    sqlite3.sqlite3_finalize(Stmt);
   end;
 end;
 
@@ -1012,26 +1026,26 @@ begin
       exit;
     end;
 
-    while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
-      const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
-      if QueryResultCol1 = nil then begin
-        writeLn("Query result is nil");
-        sqlite3.sqlite3_finalize(Stmt);
-        exit;
-      end;
-      const QueryResultCol2 = sqlite3.sqlite3_column_text(Stmt, 1);
-      if QueryResultCol2 = nil then begin
-        writeLn("Query result is nil");
-        sqlite3.sqlite3_finalize(Stmt);
-        exit;
-      end;
+    try
+      while sqlite3.sqlite3_step(Stmt) = sqlite3.SQLITE_ROW do begin
+        const QueryResultCol1 = sqlite3.sqlite3_column_text(Stmt, 0);
+        if QueryResultCol1 = nil then begin
+          writeLn("Query result is nil");
+          exit;
+        end;
+        const QueryResultCol2 = sqlite3.sqlite3_column_text(Stmt, 1);
+        if QueryResultCol2 = nil then begin
+          writeLn("Query result is nil");
+          exit;
+        end;
 
-      const plUid = MakeStringFromCString(QueryResultCol1);
-      const plName = MakeStringFromCString(QueryResultCol2);
-      writeLn(plUid + " - " + plName);
+        const plUid = MakeStringFromCString(QueryResultCol1);
+        const plName = MakeStringFromCString(QueryResultCol2);
+        writeLn(plUid + " - " + plName);
+      end;
+    finally
+      sqlite3.sqlite3_finalize(Stmt);
     end;
-
-    sqlite3.sqlite3_finalize(Stmt);
   end;
 end;
 
@@ -1053,7 +1067,7 @@ begin
       const SqlStatement = "DELETE FROM song WHERE song_uid = ?";
       var RowsAffected: Int32 := 0;
 
-      if not ExecuteUpdate(SqlStatement, var RowsAffected, ArgList) then begin
+      if not ExecuteUpdate(SqlStatement, out RowsAffected, ArgList) then begin
         Rollback;
         writeLn("error: unable to delete song '{0}'", SongUid);
       end
