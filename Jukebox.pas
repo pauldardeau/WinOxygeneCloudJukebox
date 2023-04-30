@@ -40,6 +40,11 @@ type
     const PH_AUDIO_FILE_PATH = "%%AUDIO_FILE_PATH%%";
     const PH_START_SONG_TIME_OFFSET = "%%START_SONG_TIME_OFFSET%%";
 
+  {$IFNDEF WINDOWS}
+  public
+    GlobalJukebox: Jukebox := nil; static;
+  {$ENDIF}
+
   private
     JukeboxOptions: JukeboxOptions;
     StorageSystem: StorageSystem;
@@ -196,6 +201,15 @@ constructor Jukebox(JbOptions: JukeboxOptions;
                     aContainerPrefix: String;
                     aDebugPrint: Boolean);
 begin
+  {$IFNDEF WINDOWS}
+  if GlobalJukebox = nil then begin
+    GlobalJukebox := self;
+  end
+  else begin
+    //TODO: throw an exception (only 1 Jukebox instance allowed)
+  end;
+  {$ENDIF}
+
   JukeboxOptions := JbOptions;
   StorageSystem := StorageSys;
   DebugPrint := aDebugPrint;
@@ -245,9 +259,41 @@ end;
 
 //*******************************************************************************
 
+class method SigHandler(signum: Integer);
+begin
+  {$IFNDEF WINDOWS}
+  if Jukebox.GlobalJukebox <> nil then begin
+    if signum = SIGUSR1 then begin
+      Jukebox.GlobalJukebox.TogglePausePlay;
+    end
+    else if signum = SIGUSR2 then begin
+      Jukebox.GlobalJukebox.AdvanceToNextSong;
+    end
+    else if signum = SIGINT then begin
+      Jukebox.GlobalJukebox.PrepareForTermination;
+    end
+    else if signum = SIGWINCH then begin
+      Jukebox.GlobalJukebox.DisplayInfo;
+    end;
+  end;
+  {$ENDIF}
+end;
+
+//*******************************************************************************
+
 method Jukebox.InstallSignalHandlers;
 begin
-  //TODO: set up signal handlers
+  {$IFNDEF WINDOWS}
+  var lAct := new __struct_sigaction;
+  lAct.sa_flags := SA_SIGINFO;
+  lAct.__sigaction_u.__sa_handler := @SigHandler;
+
+  // setup the sigterm handler
+  sigaction(SIGUSR1, @lAct, nil);
+  sigaction(SIGUSR2, @lAct, nil);
+  sigaction(SIGINT, @lAct, nil);
+  sigaction(SIGWINCH, @lAct, nil);
+  {$ENDIF}
 end;
 
 //*******************************************************************************
@@ -412,7 +458,6 @@ begin
 end;
 
 //*******************************************************************************
-
 
 method Jukebox.StoreSongMetadata(FsSong: SongMetadata): Boolean;
 begin
@@ -1169,7 +1214,7 @@ begin
         if (j >= aSongList.Count) or (j < 0) then begin
           // I think this is a bug in NextInt method. Sometimes getting
           // -1 value.
-          writeLn("*** j = {0}, n = {1}", j, n);
+          //writeLn("*** j = {0}, n = {1}", j, n);
         end
         else begin
           GettingValidRandomIndex := false;
