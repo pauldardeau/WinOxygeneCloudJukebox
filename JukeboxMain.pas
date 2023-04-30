@@ -260,7 +260,8 @@ begin
       jukebox.ShowAlbum(Artist, Album);
     end
     else begin
-      writeLn("error: artist and album must be specified using --artist and --album options");
+      writeLn("error: artist and album must be specified using {0}{1} and {2}{3} options",
+              ARG_PREFIX, ARG_ARTIST, ARG_PREFIX, ARG_ALBUM);
       ExitCode := 1;
     end;
   end
@@ -400,7 +401,7 @@ begin
   OptParser.AddOptionalStringArgument(ARG_PREFIX+ARG_DIRECTORY, "specify directory where audio player should run");
   OptParser.AddRequiredArgument(ARG_COMMAND, "command for jukebox");
 
-  var Args := OptParser.ParseArgs(ConsoleArgs);
+  const Args = OptParser.ParseArgs(ConsoleArgs);
   if Args = nil then begin
     writeLn("error: unable to obtain command-line arguments");
     exit 1;
@@ -495,6 +496,9 @@ begin
             const Value = LineTokens[1].Trim();
             if (Key.Length > 0) and (Value.Length > 0) then begin
               Creds.Add(Key, new PropertyValue(Value));
+              if Key = CREDS_CONTAINER_PREFIX then begin
+                ContainerPrefix := Value;
+              end;
             end;
           end;
         end;
@@ -510,7 +514,6 @@ begin
     end;
 
     const Command = Args.GetStringValue(ARG_COMMAND);
-    Args := nil;
 
     HelpCommands := new StringSet;
     HelpCommands.Add(CMD_HELP);
