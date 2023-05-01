@@ -494,7 +494,7 @@ type
 
 //*******************************************************************************
 
-    method ShuffleList(TheList: List);
+    method ShuffleList(TheList: IList);
     begin
       const random = new Random;
       var n := TheList.Count;
