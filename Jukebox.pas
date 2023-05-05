@@ -849,13 +849,13 @@ begin
     writeLn("playing {0}", Song.Fm.FileUid);
     if AudioPlayerExeFileName.Length > 0 then begin
       var didResume := false;
-      var commandArgs := "";
+      var CommandArgs := "";
       if SongPlayIsResume then begin
-        const placeholder = PH_START_SONG_TIME_OFFSET;
-        const posPlaceholder =
-            AudioPlayerResumeArgs.IndexOf(placeholder);
-        if posPlaceholder > -1 then begin
-          commandArgs := AudioPlayerResumeArgs;
+        const Placeholder = PH_START_SONG_TIME_OFFSET;
+        const PosPlaceholder =
+            AudioPlayerResumeArgs.IndexOf(Placeholder);
+        if PosPlaceholder > -1 then begin
+          CommandArgs := AudioPlayerResumeArgs;
           var theSongStartTime: String := "";
           const minutes = SongSecondsOffset / 60;
           if minutes > 0 then begin
@@ -872,19 +872,19 @@ begin
             theSongStartTime := SongSecondsOffset.ToString();
           end;
           //writeLn("resuming at '{0}'", songStartTime);
-          commandArgs := commandArgs.Replace(PH_START_SONG_TIME_OFFSET, theSongStartTime);
-          commandArgs := commandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
+          CommandArgs := CommandArgs.Replace(PH_START_SONG_TIME_OFFSET, theSongStartTime);
+          CommandArgs := CommandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
           didResume := true;
-          //writeLn("commandArgs: '{0}'", commandArgs);
+          //writeLn("CommandArgs: '{0}'", CommandArgs);
         end;
       end;
 
       if not didResume then begin
-        commandArgs := AudioPlayerCommandArgs;
-        commandArgs := commandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
+        CommandArgs := AudioPlayerCommandArgs;
+        CommandArgs := CommandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
       end;
 
-      const Args = commandArgs.Split(" ");
+      const Args = CommandArgs.Split(" ");
       PlayerTerminated := false;
       PlayerRunner := new AudioPlayerRunner(AudioPlayerExeFileName,
                                             SongPlayDirPath,
