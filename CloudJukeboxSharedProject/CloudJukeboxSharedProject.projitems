@@ -25,5 +25,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)JukeboxOptions.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Album.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Playlist.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)AudioPlayerRunner.pas" />
   </ItemGroup>
 </Project>

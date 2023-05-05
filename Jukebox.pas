@@ -67,7 +67,8 @@ type
     AudioPlayerExeFileName: String;
     AudioPlayerCommandArgs: String;
     AudioPlayerResumeArgs: String;
-    AudioPlayerProcess: Process;
+    PlayerRunner: AudioPlayerRunner;
+    PlayerTerminated: Boolean;
     SongPlayLengthSeconds: Integer;
     CumulativeDownloadBytes: Int64;
     CumulativeDownloadTime: Integer;
@@ -231,7 +232,8 @@ begin
   AudioPlayerExeFileName := "";
   AudioPlayerCommandArgs := "";
   AudioPlayerResumeArgs := "";
-  AudioPlayerProcess := nil;
+  PlayerRunner := nil;
+  PlayerTerminated := false;
   SongPlayLengthSeconds := 20;
   CumulativeDownloadBytes := 0;
   CumulativeDownloadTime := 0;
@@ -393,10 +395,10 @@ begin
   IsPaused := not IsPaused;
   if IsPaused then begin
     writeLn("paused");
-    if AudioPlayerProcess <> nil then begin
+    if PlayerRunner <> nil then begin
       // capture current song position (seconds into song)
-      AudioPlayerProcess.Stop();
-      AudioPlayerProcess := nil;
+      PlayerRunner.Stop;
+      PlayerTerminated := true;
     end;
   end
   else begin
@@ -409,9 +411,9 @@ end;
 method Jukebox.AdvanceToNextSong;
 begin
   writeLn("advancing to next song");
-  if AudioPlayerProcess <> nil then begin
-    AudioPlayerProcess.Stop();
-    AudioPlayerProcess := nil;
+  if PlayerRunner <> nil then begin
+    PlayerRunner.Stop;
+    PlayerTerminated := true;
   end;
 end;
 
@@ -425,9 +427,9 @@ begin
   ExitRequested := true;
 
   // terminate audio player if it's running
-  if AudioPlayerProcess <> nil then begin
-    AudioPlayerProcess.Stop();
-    AudioPlayerProcess := nil;
+  if PlayerRunner <> nil then begin
+    PlayerRunner.Stop;
+    PlayerTerminated := true;
   end;
 end;
 
@@ -883,19 +885,24 @@ begin
       end;
 
       const Args = commandArgs.Split(" ");
-      const Env = new Dictionary<String,String>();
+      PlayerTerminated := false;
+      PlayerRunner := new AudioPlayerRunner(AudioPlayerExeFileName,
+                                            SongPlayDirPath,
+                                            Args);
+      PlayerRunner.PlaySong;
+      if not PlayerTerminated then begin
+        ExitCode := PlayerRunner.GetExitCode;
+        PlayerRunner := nil;
 
-      AudioPlayerProcess := new Process();
-      ExitCode := AudioPlayerProcess.Run(AudioPlayerExeFileName,
-                                         Args,
-                                         Env,
-                                         SongPlayDirPath);
-      AudioPlayerProcess := nil;
-
-      // if the audio player failed or is not present, just sleep
-      // for the length of time that audio would be played
-      if ExitCode <> 0 then begin
-        Utils.SleepSeconds(SongPlayLengthSeconds);
+        // if the audio player failed or is not present, just sleep
+        // for the length of time that audio would be played
+        if ExitCode <> 0 then begin
+          Utils.SleepSeconds(SongPlayLengthSeconds);
+        end;
+      end
+      else begin
+        PlayerTerminated:= false;
+        PlayerRunner := nil;
       end;
     end
     else begin
